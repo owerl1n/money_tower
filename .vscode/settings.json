@@ -1,0 +1,40 @@
+{
+    "cmake.configureOnOpen": false,
+    "playdate-debug.productName": "money_tower",
+    "playdate.sdkPath": "${userHome}/Developer/PlaydateSDK",
+    "Lua.diagnostics.globals": [
+        "playdate",
+        "import",
+        "const",
+        "kTextAlignment",
+        "class"
+    ],
+    "Lua.workspace.library": ["%PLAYDATE_SDK_PATH%","${userHome}/Developer/PlaydateSDK"],
+    "Lua.runtime.nonstandardSymbol": [
+        "+=",
+        "-=",
+        "*=",
+        "/=",
+        "//=",
+        "%=",
+        "<<=",
+        ">>=",
+        "&=",
+        "|=",
+        "^="
+    ],
+    "Lua.diagnostics.disable": [
+        "lowercase-global",
+        "need-check-nil",
+        "undefined-field",
+        "inject-field",
+        "cast-local-type",
+        "trailing-space",
+        "duplicate-set-field",
+        "undefined-global",
+        "unused-local",
+        "redundant-parameter",
+        "param-type-mismatch",
+        "deprecated"
+    ],
+}
