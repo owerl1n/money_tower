@@ -1,9 +1,12 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
+import "game"   -- ← добавь в самый верх
+import "game/level"
+import "game/player"
+
+
 GameScene = {}
-
-
 
 function GameScene:enter(params)
     params = params or {}

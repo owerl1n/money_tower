@@ -19,7 +19,7 @@ local gfx <const> = pd.graphics
 
 -- Регистрируем сцены
 SceneManager.register("splash", SplashScene)
---SceneManager.register("game",   GameScene)
+SceneManager.register("game",   GameScene)
 
 -- Стартуем со game
 SceneManager.go("splash", nil, SceneManager.transitions.fade)
