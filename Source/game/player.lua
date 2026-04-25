@@ -14,8 +14,8 @@ function Player:init(x, y)
     self:moveTo(x, y)
     self:setCollideRect(4, 4, 8, 12)
     self:setZIndex(100)
-    self:setGroups({ 1 })
-    self:setCollidesWithGroups({ 2, 3, 4, 5 })  -- добавили группу 5 (interact triggers)
+    --self:setGroups({ 1 })
+    --self:setCollidesWithGroups({ 2, 3, 4, 5 })  -- добавили группу 5 (interact triggers)
 
     self:addState("idle", 1, 1)
     self:addState("run", 1, 1, { tickStep = 4, loop = true })
@@ -34,7 +34,7 @@ function Player:init(x, y)
     self.vx = 0
     self.vy = 0
 
-    self.gravity = 0.5
+    self.gravity = 0.05
     self.jumpForce = -5.5
     self.jumpCutOff = -3.5
     self.speed = 1.75
@@ -64,7 +64,7 @@ function Player:update()
     if not self.collecting then
         self:updateAnimationState()
     end
-
+    print(self.onGround)
     Player.super.update(self)
 end
 
@@ -85,6 +85,8 @@ function Player:handleInput()
 
     if pd.buttonJustPressed(pd.kButtonA) then
         self.jumpBufferTime = self.jumpBufferMax
+        --print(self.jumpBufferTime) 5
+        --print(self.jumpBufferMax) 5
     end
 
     if self.jumpBufferTime > 0 and (self.onGround or self.coyoteTime > 0) then
@@ -182,7 +184,8 @@ function Player:handleMovementAndCollisions()
                     self.nearInteractive = true
                 end
 
-                if other.type == "solid" then
+                if other.type == "Solid" then
+                    print("solid")
                     if collision.normal.y == -1 then
                         self.vy = 0
                         self.onGround = true

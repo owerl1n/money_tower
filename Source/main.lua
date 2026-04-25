@@ -6,6 +6,7 @@ import "CoreLibs/crank"
 
 import "libs/AnimatedSprite"
 import "libs/SceneManager"   -- регистрирует глобальный SceneManager
+import "libs/LDtk"
 
 import "game/level"
 import "game/player"
@@ -22,8 +23,9 @@ SceneManager.register("splash", SplashScene)
 SceneManager.register("game",   GameScene)
 
 -- Стартуем со game
+pd.display.setScale(2)
 SceneManager.go("splash", nil, SceneManager.transitions.fade)
-    pd.display.setScale(2)
+
 
 function pd.update()
     SceneManager.update()

@@ -1,7 +1,7 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
-import "game"   -- ← добавь в самый верх
+import "game"
 import "game/level"
 import "game/player"
 

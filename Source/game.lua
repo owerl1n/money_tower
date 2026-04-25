@@ -28,7 +28,7 @@ function Game:init(startLevel)
 
     -- Спавним игрока примерно по центру снизу уровня
     local spawnX = 100
-    local spawnY = 100
+    local spawnY = 10
     self.player = Player(spawnX, spawnY)
 
     -- HUD — простая заглушка
