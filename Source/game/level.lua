@@ -45,7 +45,11 @@ function Level:goToLevel(levelName)
 
             local emptyTiles = ldtk.get_empty_tileIDs(levelName, "Solid", layerName)
             if emptyTiles then
-                gfx.sprite.addWallSprites(tilemap, emptyTiles)
+                local wallSprites = gfx.sprite.addWallSprites(tilemap, emptyTiles)
+                -- Устанавливаем тип для каждого wall sprite
+                for _, wallSprite in ipairs(wallSprites) do
+                    wallSprite.type = "Solid"
+                end
             end
         end
     end
