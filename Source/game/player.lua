@@ -34,6 +34,7 @@ function Player:update()
     self:handleInput()
     self:applyPhysics()
     Player.super.update(self)
+    --print(self.onGround)
 end
 
 function Player:handleInput()
@@ -41,9 +42,11 @@ function Player:handleInput()
     if pd.buttonIsPressed(pd.kButtonLeft) then
         self.vx = -self.speed
         self.globalFlip = gfx.kImageFlippedX
+        print("LEFT pressed, vx =", self.vx)  -- ← добавьте
     elseif pd.buttonIsPressed(pd.kButtonRight) then
         self.vx = self.speed
         self.globalFlip = gfx.kImageUnflipped
+        print("RIGHT pressed, vx =", self.vx)
     else
         self.vx = 0
     end
@@ -77,6 +80,7 @@ function Player:applyPhysics()
     if self.vx ~= 0 then
         local actualX, actualY, collisions = self:moveWithCollisions(self.x + self.vx, self.y)
     end
+
 
     -- Вертикальное движение
     if self.vy ~= 0 then

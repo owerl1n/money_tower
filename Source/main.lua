@@ -22,9 +22,8 @@ local gfx <const> = pd.graphics
 SceneManager.register("splash", SplashScene)
 SceneManager.register("game",   GameScene)
 
--- Стартуем со game
 pd.display.setScale(2)
-SceneManager.go("splash", nil, SceneManager.transitions.fade)
+SceneManager.go("splash", nil, SceneManager.transitions.cut)
 
 
 function pd.update()
