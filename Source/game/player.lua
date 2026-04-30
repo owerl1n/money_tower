@@ -1,138 +1,271 @@
+
 local pd <const> = playdate
 local gfx <const> = playdate.graphics
-
-import "libs/AnimatedSprite"
 
 class('Player').extends(AnimatedSprite)
 
 function Player:init(x, y)
-    local playerImagetable = gfx.imagetable.new("images/mage-table-15-17")
-    Player.super.init(self, playerImagetable)
+    --self.gameManager = gameManager
 
-    self:setCenter(0.5, 1)
-    self:moveTo(x, y)
-    self:setCollideRect(4, 4, 8, 12)
-    self:setZIndex(100)
+    -- State Machine
+    local playerImageTable = gfx.imagetable.new("images/mage-table-16-16")
+    Player.super.init(self, playerImageTable)
 
     self:addState("idle", 1, 1)
-    self:setDefaultState("idle")
+    self:addState("run", 1, 1, {tickStep = 4})
+    self:addState("jump", 1, 1)
+    self:addState("dash", 1, 1)
     self:playAnimation()
-    
-    -- Физика
-    self.vx = 0
-    self.vy = 0
-    self.gravity = 0.5
-    self.jumpForce = -5.5
-    self.jumpCutOff = -3.5        -- Минимальная скорость при отпускании кнопки
-    self.speed = 2
-    self.maxFallSpeed = 6
-    self.onGround = false
-    self.jumping = false        -- Флаг активного прыжка
+
+    -- Sprite properties
+    self:moveTo(x, y)
+    self:setZIndex(Z_INDEXES.Player)
+    self:setCollideRect(3, 3, 10, 13)
+    self:setTag(TAGS.Player)
+
+    -- Physics properties
+    self.xVelocity = 0
+    self.yVelocity = 0
+    self.gravity = 1.0
+    self.maxSpeed = 2
+    self.jumpVelocity = -6
+    self.drag = 0.1
+    self.minimumAirSpeed = 0.5
+
+    self.jumpBufferAmount = 5
+    self.jumpBuffer = 0
+
+    -- Abilities
+    self.doubleJumpAbility = false
+    self.dashAbility = false
+
+    -- Double Jump
+    self.doubleJumpAvailable = true
+
+    -- Dash
+    self.dashAvailable = true
+    self.dashSpeed = 8
+    self.dashMinimumSpeed = 3
+    self.dashDrag = 0.8
+
+    -- Player State
+    self.touchingGround = false
+    self.touchingCeiling = false
+    self.touchingWall = false
+    self.dead = false
+end
+
+function Player:collisionResponse(other)
+    local tag = other:getTag()
+    if tag == TAGS.Pickup or tag == TAGS.Hazard then
+        return gfx.sprite.kCollisionTypeOverlap
+    end
+    return gfx.sprite.kCollisionTypeSlide
 end
 
 function Player:update()
-    self:handleInput()
-    self:applyPhysics()
-    self:checkPickups()
-    Player.super.update(self)
-    --print(self.onGround)
+    if self.dead then
+        return
+    end
+
+    self:updateAnimation()
+
+    self:updateJumpBuffer()
+    self:handleState()
+    self:handleMovementAndCollisions()
 end
 
-function Player:handleInput()
-    -- Движение влево/вправо
-    if pd.buttonIsPressed(pd.kButtonLeft) then
-        self.vx = -self.speed
-        self.globalFlip = gfx.kImageFlippedX
-        --print("LEFT pressed, vx =", self.vx)  -- ← добавьте
-    elseif pd.buttonIsPressed(pd.kButtonRight) then
-        self.vx = self.speed
-        self.globalFlip = gfx.kImageUnflipped
-        --print("RIGHT pressed, vx =", self.vx)
-    else
-        self.vx = 0
+function Player:updateJumpBuffer()
+    self.jumpBuffer -= 1
+    if self.jumpBuffer <= 0 then
+        self.jumpBuffer = 0
     end
-
-    -- Начало прыжка
-    if pd.buttonJustPressed(pd.kButtonA) and self.onGround then
-        self.vy = self.jumpForce
-        self.onGround = false
-        self.jumping = true
-    end
-
-    -- Отпустили кнопку A во время прыжка — обрезаем высоту
-    if self.jumping and pd.buttonJustReleased(pd.kButtonA) then
-        if self.vy < 0 then  -- Только если ещё летим вверх
-            self.vy = math.max(self.vy, self.jumpCutOff)
-        end
-        self.jumping = false
+    if pd.buttonJustPressed(pd.kButtonA) then
+        self.jumpBuffer = self.jumpBufferAmount
     end
 end
 
-function Player:applyPhysics()
-    -- Проверяем землю отдельным зондом (+1px вниз)
-    local _, _, groundCollisions, groundCount = self:moveWithCollisions(self.x, self.y + 1)
-    self.onGround = false
-    for i = 1, groundCount do
-        if groundCollisions[i].normal.y == -1 then
-            self.onGround = true
-            break
+function Player:playerJumped()
+    return self.jumpBuffer > 0
+end
+
+function Player:handleState()
+    if self.currentState == "idle" then
+        self:applyGravity()
+        self:handleGroundInput()
+    elseif self.currentState == "run" then
+        self:applyGravity()
+        self:handleGroundInput()
+    elseif self.currentState == "jump" then
+        if self.touchingGround then
+            self:changeToIdleState()
+        end
+        self:applyGravity()
+        self:applyDrag(self.drag)
+        self:handleAirInput()
+    elseif self.currentState == "dash" then
+        self:applyDrag(self.dashDrag)
+        if math.abs(self.xVelocity) <= self.dashMinimumSpeed then
+            self:changeToFallState()
         end
     end
-    -- Возвращаем спрайт обратно если никуда не двигались
-    self:moveTo(self.x, self.y)  -- зонд не должен двигать спрайт
+end
 
-    -- Гравитация
-    if not self.onGround then
-        self.vy += self.gravity
-        if self.vy > self.maxFallSpeed then
-            self.vy = self.maxFallSpeed
-        end
-    else
-        if self.vy > 0 then self.vy = 0 end
-    end
+function Player:handleMovementAndCollisions()
+    local _, _, collisions, length = self:moveWithCollisions(self.x + self.xVelocity, self.y + self.yVelocity)
 
-    -- Горизонтальное движение
-    if self.vx ~= 0 then
-        self:moveWithCollisions(self.x + self.vx, self.y)
-    end
+    self.touchingGround = false
+    self.touchingCeiling = false
+    self.touchingWall = false
+    local died = false
 
-    -- Вертикальное движение
-    if self.vy ~= 0 then
-        local _, _, collisions, length = self:moveWithCollisions(self.x, self.y + self.vy)
-        for i = 1, length do
-            local col = collisions[i]
-            if col.normal.y == -1 and self.vy > 0 then
-                self.vy = 0
-                self.jumping = false
-            elseif col.normal.y == 1 and self.vy < 0 then
-                self.vy = 0
-                self.jumping = false
+    for i=1,length do
+        local collision = collisions[i]
+        local collisionType = collision.type
+        local collisionObject = collision.other
+        local collisionTag = collisionObject:getTag()
+        if collisionType == gfx.sprite.kCollisionTypeSlide then
+            if collision.normal.y == -1 then
+                self.touchingGround = true
+                self.doubleJumpAvailable = true
+                self.dashAvailable = true
+            elseif collision.normal.y == 1 then
+                self.touchingCeiling = true
+            end
+
+            if collision.normal.x ~= 0 then
+                self.touchingWall = true
             end
         end
-    end
 
-
-    -- Wrap экрана по горизонтали
-    -- local screenWidth = 200
-    -- if self.x < 0 then
-    --     self:moveTo(screenWidth, self.y)
-    -- elseif self.x > screenWidth then
-    --     self:moveTo(0, self.y)
-    -- end
-end
-
-function Player:checkPickups()
-    local overlaps = self:overlappingSprites()
-    for _, sprite in ipairs(overlaps) do
-        if sprite.collect then
-            sprite:collect()
+        if collisionTag == TAGS.Hazard then
+            died = true
+        elseif collisionTag == TAGS.Pickup then
+            collisionObject:collect()
         end
     end
+
+    if self.xVelocity < 0 then
+        self.globalFlip = 1
+    elseif self.xVelocity > 0 then
+        self.globalFlip = 0
+    end
+
+    -- if self.x < 0 then
+	-- 	self.gameManager:enterRoom("west")
+    -- elseif self.x > 400  then
+    --     self.gameManager:enterRoom("east")
+    -- elseif self.y < 0 then
+    --     self.gameManager:enterRoom("north")
+    -- elseif self.y > 240 then
+    --     self.gameManager:enterRoom("south")
+	-- end
+
+    if died then
+        self:die()
+    end
 end
 
--- function Player:collisionResponse(other)
---     if other.type == "coin" or other.type == "rotation_trigger" or other.type == "interact_trigger" then
---         return gfx.sprite.kCollisionTypeOverlap
---     end
---     return gfx.sprite.kCollisionTypeSlide
--- end
+function Player:die()
+    self.xVelocity = 0
+    self.yVelocity = 0
+    self.dead = true
+    self:setCollisionsEnabled(false)
+    pd.timer.performAfterDelay(200, function()
+        self:setCollisionsEnabled(true)
+        --self.gameManager:resetPlayer()
+        self.dead = false
+    end)
+end
+
+-- Input Helper Functions
+function Player:handleGroundInput()
+    if self:playerJumped() then
+        self:changeToJumpState()
+    elseif pd.buttonJustPressed(pd.kButtonB) and self.dashAvailable and self.dashAbility then
+        self:changeToDashState()
+    elseif pd.buttonIsPressed(pd.kButtonLeft) then
+        self:changeToRunState("left")
+    elseif pd.buttonIsPressed(pd.kButtonRight) then
+        self:changeToRunState("right")
+    else
+        self:changeToIdleState()
+    end
+end
+
+function Player:handleAirInput()
+    if self:playerJumped() and self.doubleJumpAvailable and self.doubleJumpAbility then
+        self.doubleJumpAvailable = false
+        self:changeToJumpState()
+    elseif pd.buttonJustPressed(pd.kButtonB) and self.dashAvailable and self.dashAbility then
+        self:changeToDashState()
+    elseif pd.buttonIsPressed(pd.kButtonLeft) then
+        self.xVelocity = -self.maxSpeed
+    elseif pd.buttonIsPressed(pd.kButtonRight) then
+        self.xVelocity = self.maxSpeed
+    end
+end
+
+-- State transitions
+function Player:changeToIdleState()
+    self.xVelocity = 0
+    self:changeState("idle")
+end
+
+function Player:changeToRunState(direction)
+    if direction == "left" then
+        self.xVelocity = -self.maxSpeed
+        self.globalFlip = 1
+    elseif direction == "right" then
+        self.xVelocity = self.maxSpeed
+        self.globalFlip = 0
+    end
+    self:changeState("run")
+end
+
+function Player:changeToJumpState()
+    self.yVelocity = self.jumpVelocity
+    self.jumpBuffer = 0
+    self:changeState("jump")
+end
+
+function Player:changeToFallState()
+    self:changeState("jump")
+end
+
+function Player:changeToDashState()
+    self.dashAvailable = false
+    self.yVelocity = 0
+    if pd.buttonIsPressed(pd.kButtonLeft) then
+        self.xVelocity = -self.dashSpeed
+    elseif pd.buttonIsPressed(pd.kButtonRight) then
+        self.xVelocity = self.dashSpeed
+    else
+        if self.globalFlip == 1 then
+            self.xVelocity = -self.dashSpeed
+        else
+            self.xVelocity = self.dashSpeed
+        end
+    end
+    self:changeState("dash")
+end
+
+-- Physics Helper Functions
+function Player:applyGravity()
+    self.yVelocity += self.gravity
+    if self.touchingGround or self.touchingCeiling then
+        self.yVelocity = 0
+    end
+end
+
+function Player:applyDrag(amount)
+    if self.xVelocity > 0 then
+        self.xVelocity -= amount
+    elseif self.xVelocity < 0 then
+        self.xVelocity += amount
+    end
+
+    if math.abs(self.xVelocity) < self.minimumAirSpeed or self.touchingWall then
+        self.xVelocity = 0
+    end
+end

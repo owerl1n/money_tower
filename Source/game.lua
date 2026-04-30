@@ -9,6 +9,18 @@ class('Game').extends()
 
 Game.instance = nil
 
+TAGS = {
+    Pickup = 1,
+    Player = 2,
+    Hazard = 3
+}
+
+Z_INDEXES = {
+    Hazard = 20,
+    Pickup = 50,
+    Player = 100
+}
+
 function Game:init(startLevel)
     startLevel = startLevel or 1
 

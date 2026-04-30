@@ -148,7 +148,7 @@
 		}
 	], "entities": [
 		{
-			"identifier": "AnimTile",
+			"identifier": "Portal",
 			"uid": 64,
 			"tags": [],
 			"exportToToc": false,
@@ -167,7 +167,7 @@
 			"fillOpacity": 1,
 			"lineOpacity": 1,
 			"hollow": false,
-			"color": "#D77643",
+			"color": "#0099DB",
 			"renderMode": "Rectangle",
 			"showName": true,
 			"tilesetId": null,
@@ -184,7 +184,7 @@
 				{
 					"identifier": "Stuff",
 					"doc": null,
-					"__type": "LocalEnum.Stuff",
+					"__type": "LocalEnum.Portal",
 					"uid": 65,
 					"type": "F_Enum(63)",
 					"isArray": false,
@@ -355,7 +355,7 @@
 		}
 	], "enums": [
 		{ "identifier": "TileEnum", "uid": 14, "values": [{ "id": "Solid", "tileRect": null, "color": 12470831 }], "iconTilesetUid": null, "externalRelPath": null, "externalFileChecksum": null, "tags": [] },
-		{ "identifier": "Stuff", "uid": 63, "values": [{ "id": "Portal", "tileRect": null, "color": 39387 }], "iconTilesetUid": 1, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
+		{ "identifier": "Portal", "uid": 63, "values": [{ "id": "Portal", "tileRect": null, "color": 39387 }], "iconTilesetUid": 1, "externalRelPath": null, "externalFileChecksum": null, "tags": [] }
 	], "externalEnums": [], "levelFields": [] },
 	"levels": [
 		{
@@ -404,19 +404,19 @@
 					"gridTiles": [],
 					"entityInstances": [
 						{
-							"__identifier": "AnimTile",
+							"__identifier": "Portal",
 							"__grid": [4,3],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
-							"__smartColor": "#D77643",
+							"__smartColor": "#0099DB",
 							"iid": "ab4e58c0-21a0-11f1-941c-3b5eb09eb196",
 							"width": 16,
 							"height": 16,
 							"defUid": 64,
 							"px": [64,48],
 							"fieldInstances": [
-								{ "__identifier": "Stuff", "__type": "LocalEnum.Stuff", "__value": "Portal", "__tile": null, "defUid": 65, "realEditorValues": [{
+								{ "__identifier": "Stuff", "__type": "LocalEnum.Portal", "__value": "Portal", "__tile": null, "defUid": 65, "realEditorValues": [{
 									"id": "V_String",
 									"params": ["Portal"]
 								}] },

@@ -18,19 +18,19 @@ function Coin:init(x, y, entity)
         tickStep = 4,
         loop = true
     })
-    self:setDefaultState("spin")
+    --self:setDefaultState("spin")
 
     self:setCenter(0.5, 0.5)
     self:moveTo(x, y)
     self:setCollideRect(2, 2, 7, 7)  -- чуть меньше спрайта
-    self:setZIndex(50)
-    self:setTag(2)
+    self:setZIndex(Z_INDEXES.Pickup)
+    self:setTag(TAGS.Pickup)
 
     self.collected = false
 
     self:playAnimation()
 
-    print("[Coin] заспавнена x=" .. x .. " y=" .. y)
+    print("[Coin] spawned x=" .. x .. " y=" .. y)
 end
 
 function Coin:collect()
@@ -41,3 +41,7 @@ function Coin:collect()
 
     self:remove()
 end
+
+-- function Coin:collisionResponse(other)
+--     return gfx.sprite.kCollisionTypeOverlap
+-- end
