@@ -5,7 +5,7 @@ import "game/coinPopup"
 
 class('Player').extends(AnimatedSprite)
 
-function Player:init(x, y)
+function Player:init(x, y, levelComplete)
     local playerImageTable = gfx.imagetable.new("images/mage-table-16-16")
     Player.super.init(self, playerImageTable)
 
@@ -51,18 +51,23 @@ function Player:init(x, y)
     self.touchingWall = false
     self.dead = false
 
+    -- При касании портала блокируем только горизонтальный ввод
+    -- Физика (гравитация, падение) продолжает работать
+    self.atPortal = false
+
     -- Попап монет над игроком
     self.coinPopup = CoinPopup(self)
+
+    self.levelComplete = levelComplete
 end
 
--- Вызывается из Coin:collect()
 function Player:showCoinPopup(amount)
     self.coinPopup:addCoins(amount)
 end
 
 function Player:collisionResponse(other)
     local tag = other:getTag()
-    if tag == TAGS.Pickup or tag == TAGS.Hazard then
+    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Portal then
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide
@@ -92,15 +97,28 @@ end
 function Player:handleState()
     if self.currentState == "idle" then
         self:applyGravity()
-        self:handleGroundInput()
+        if self.atPortal then
+            -- только стоим, не реагируем на ввод
+            self.xVelocity = 0
+        else
+            self:handleGroundInput()
+        end
     elseif self.currentState == "run" then
         self:applyGravity()
-        self:handleGroundInput()
+        if self.atPortal then
+            self:changeToIdleState()
+        else
+            self:handleGroundInput()
+        end
     elseif self.currentState == "jump" then
+        -- в воздухе: гравитация и drag всегда работают,
+        -- горизонтальный ввод блокируем если у портала
         if self.touchingGround then self:changeToIdleState() end
         self:applyGravity()
         self:applyDrag(self.drag)
-        self:handleAirInput()
+        if not self.atPortal then
+            self:handleAirInput()
+        end
     elseif self.currentState == "dash" then
         self:applyDrag(self.dashDrag)
         if math.abs(self.xVelocity) <= self.dashMinimumSpeed then
@@ -116,6 +134,7 @@ function Player:handleMovementAndCollisions()
     self.touchingCeiling = false
     self.touchingWall = false
     local died = false
+    local touchedPortal = false
 
     for i = 1, length do
         local collision = collisions[i]
@@ -140,6 +159,11 @@ function Player:handleMovementAndCollisions()
             died = true
         elseif collisionTag == TAGS.Pickup then
             collisionObject:collect()
+        elseif collisionTag == TAGS.Portal then
+            touchedPortal = true
+            self._lastPortalX = collisionObject.x + 8
+            self._lastPortalY = collisionObject.y
+            --print(touchedPortal)
         end
     end
 
@@ -149,13 +173,28 @@ function Player:handleMovementAndCollisions()
         self.globalFlip = 0
     end
 
-    if died then self:die() end
+    if died then
+        self:die()
+    elseif touchedPortal and not self.atPortal then
+        self:onPortalTouch()
+    end
+end
+
+function Player:onPortalTouch()
+    self.atPortal = true
+    self.xVelocity = 0
+    if self.levelComplete then
+        local px = self._lastPortalX or self.x
+        local py = self._lastPortalY or self.y
+        self.levelComplete:trigger(px, py)
+    end
 end
 
 function Player:die()
     self.xVelocity = 0
     self.yVelocity = 0
     self.dead = true
+    self.atPortal = false
     self:setCollisionsEnabled(false)
     pd.timer.performAfterDelay(200, function()
         self:setCollisionsEnabled(true)

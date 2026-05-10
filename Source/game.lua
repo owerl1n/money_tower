@@ -12,7 +12,8 @@ Game.instance = nil
 TAGS = {
     Pickup = 1,
     Player = 2,
-    Hazard = 3
+    Hazard = 3,
+    Portal = 4,
 }
 
 Z_INDEXES = {
@@ -37,7 +38,9 @@ function Game:init(startLevel)
 
     local spawnX = 100
     local spawnY = 10
-    self.player = Player(spawnX, spawnY)
+
+    self.levelComplete = LevelComplete()
+    self.player = Player(spawnX, spawnY, self.levelComplete)
 
     -- HUD теперь умеет рисовать попап монет
     self.hud = {
@@ -50,6 +53,7 @@ end
 function Game:update()
     -- Обновляем таймер попапа монет
     self.player.coinPopup:update()
+    self.levelComplete:update()
 end
 
 function Game:handleCrank(change, acceleratedChange)

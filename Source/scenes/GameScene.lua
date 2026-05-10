@@ -42,6 +42,9 @@ end
 
 function GameScene:draw()
     if not self.game then return end
+    -- временно для отладки
+    --local lc = self.game.levelComplete
+    --gfx.drawText("active:" .. tostring(lc._active) .. " t:" .. tostring(lc._timer), 10, 15)
     self.game.hud:draw()
 end
 
