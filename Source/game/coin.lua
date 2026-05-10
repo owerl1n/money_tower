@@ -6,7 +6,7 @@ import "game/coinManager"
 
 class('Coin').extends(AnimatedSprite)
 
-local coinImagetable = nil  -- грузим один раз на всех
+local coinImagetable = nil
 
 coinImagetable = gfx.imagetable.new("images/coin-table-11-11")
 assert(coinImagetable, "Не удалось загрузить images/coin-table-11-11")
@@ -18,11 +18,10 @@ function Coin:init(x, y, entity)
         tickStep = 4,
         loop = true
     })
-    --self:setDefaultState("spin")
 
     self:setCenter(0.5, 0.5)
     self:moveTo(x, y)
-    self:setCollideRect(2, 2, 7, 7)  -- чуть меньше спрайта
+    self:setCollideRect(2, 2, 7, 7)
     self:setZIndex(Z_INDEXES.Pickup)
     self:setTag(TAGS.Pickup)
 
@@ -37,11 +36,13 @@ function Coin:collect()
     if self.collected then return end
     self.collected = true
 
-    CoinManager.addCoins(5)
+    local amount = 5
+    CoinManager.addCoins(amount)
+
+    -- Показываем попап над игроком
+    if Game.instance and Game.instance.player then
+        Game.instance.player:showCoinPopup(amount)
+    end
 
     self:remove()
 end
-
--- function Coin:collisionResponse(other)
---     return gfx.sprite.kCollisionTypeOverlap
--- end

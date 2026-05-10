@@ -13,6 +13,7 @@ import "game/player"
 import "game/animTile"
 import "game/coin"
 import "game/coinManager"
+import "game/coinPopup"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

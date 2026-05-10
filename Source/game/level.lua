@@ -63,7 +63,7 @@ function Level:goToLevel(levelName)
             Teleport(entityX, entityY, entity, self)
         elseif entityName == "Zombie" then
             Zombie(entityX, entityY, entity)
-        elseif entityName == "AnimTile" then
+        elseif entityName == "Portal" then
             AnimTile(entityX, entityY - 2, entity)
         elseif entityName == "Coin" then
             Coin(entityX, entityY, entity)

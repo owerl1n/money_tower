@@ -1,13 +1,11 @@
-
 local pd <const> = playdate
 local gfx <const> = playdate.graphics
+
+import "game/coinPopup"
 
 class('Player').extends(AnimatedSprite)
 
 function Player:init(x, y)
-    --self.gameManager = gameManager
-
-    -- State Machine
     local playerImageTable = gfx.imagetable.new("images/mage-table-16-16")
     Player.super.init(self, playerImageTable)
 
@@ -17,13 +15,12 @@ function Player:init(x, y)
     self:addState("dash", 1, 1)
     self:playAnimation()
 
-    -- Sprite properties
     self:moveTo(x, y)
     self:setZIndex(Z_INDEXES.Player)
     self:setCollideRect(3, 3, 10, 13)
     self:setTag(TAGS.Player)
 
-    -- Physics properties
+    -- Physics
     self.xVelocity = 0
     self.yVelocity = 0
     self.gravity = 1.0
@@ -48,11 +45,19 @@ function Player:init(x, y)
     self.dashMinimumSpeed = 3
     self.dashDrag = 0.8
 
-    -- Player State
+    -- State
     self.touchingGround = false
     self.touchingCeiling = false
     self.touchingWall = false
     self.dead = false
+
+    -- Попап монет над игроком
+    self.coinPopup = CoinPopup(self)
+end
+
+-- Вызывается из Coin:collect()
+function Player:showCoinPopup(amount)
+    self.coinPopup:addCoins(amount)
 end
 
 function Player:collisionResponse(other)
@@ -64,12 +69,9 @@ function Player:collisionResponse(other)
 end
 
 function Player:update()
-    if self.dead then
-        return
-    end
+    if self.dead then return end
 
     self:updateAnimation()
-
     self:updateJumpBuffer()
     self:handleState()
     self:handleMovementAndCollisions()
@@ -77,9 +79,7 @@ end
 
 function Player:updateJumpBuffer()
     self.jumpBuffer -= 1
-    if self.jumpBuffer <= 0 then
-        self.jumpBuffer = 0
-    end
+    if self.jumpBuffer <= 0 then self.jumpBuffer = 0 end
     if pd.buttonJustPressed(pd.kButtonA) then
         self.jumpBuffer = self.jumpBufferAmount
     end
@@ -97,9 +97,7 @@ function Player:handleState()
         self:applyGravity()
         self:handleGroundInput()
     elseif self.currentState == "jump" then
-        if self.touchingGround then
-            self:changeToIdleState()
-        end
+        if self.touchingGround then self:changeToIdleState() end
         self:applyGravity()
         self:applyDrag(self.drag)
         self:handleAirInput()
@@ -119,11 +117,12 @@ function Player:handleMovementAndCollisions()
     self.touchingWall = false
     local died = false
 
-    for i=1,length do
+    for i = 1, length do
         local collision = collisions[i]
         local collisionType = collision.type
         local collisionObject = collision.other
         local collisionTag = collisionObject:getTag()
+
         if collisionType == gfx.sprite.kCollisionTypeSlide then
             if collision.normal.y == -1 then
                 self.touchingGround = true
@@ -132,7 +131,6 @@ function Player:handleMovementAndCollisions()
             elseif collision.normal.y == 1 then
                 self.touchingCeiling = true
             end
-
             if collision.normal.x ~= 0 then
                 self.touchingWall = true
             end
@@ -151,19 +149,7 @@ function Player:handleMovementAndCollisions()
         self.globalFlip = 0
     end
 
-    -- if self.x < 0 then
-	-- 	self.gameManager:enterRoom("west")
-    -- elseif self.x > 400  then
-    --     self.gameManager:enterRoom("east")
-    -- elseif self.y < 0 then
-    --     self.gameManager:enterRoom("north")
-    -- elseif self.y > 240 then
-    --     self.gameManager:enterRoom("south")
-	-- end
-
-    if died then
-        self:die()
-    end
+    if died then self:die() end
 end
 
 function Player:die()
@@ -173,12 +159,10 @@ function Player:die()
     self:setCollisionsEnabled(false)
     pd.timer.performAfterDelay(200, function()
         self:setCollisionsEnabled(true)
-        --self.gameManager:resetPlayer()
         self.dead = false
     end)
 end
 
--- Input Helper Functions
 function Player:handleGroundInput()
     if self:playerJumped() then
         self:changeToJumpState()
@@ -206,7 +190,6 @@ function Player:handleAirInput()
     end
 end
 
--- State transitions
 function Player:changeToIdleState()
     self.xVelocity = 0
     self:changeState("idle")
@@ -250,7 +233,6 @@ function Player:changeToDashState()
     self:changeState("dash")
 end
 
--- Physics Helper Functions
 function Player:applyGravity()
     self.yVelocity += self.gravity
     if self.touchingGround or self.touchingCeiling then
@@ -264,7 +246,6 @@ function Player:applyDrag(amount)
     elseif self.xVelocity < 0 then
         self.xVelocity += amount
     end
-
     if math.abs(self.xVelocity) < self.minimumAirSpeed or self.touchingWall then
         self.xVelocity = 0
     end
