@@ -46,6 +46,7 @@ function Game:init(startLevel)
     self.hud = {
         draw = function()
             self.player.coinPopup:draw()
+            self.levelComplete:draw()
         end
     }
 end

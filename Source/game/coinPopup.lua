@@ -38,7 +38,7 @@ function CoinPopup:draw()
     -- Мигание в последние 20 кадров
     if self._timer <= 20 and self._timer % 4 < 2 then return end
 
-    local text = self._amount
+    local text = tostring(self._amount)
     local p    = self._player
 
     local drawX = p.x
@@ -46,24 +46,12 @@ function CoinPopup:draw()
 
     local tw, th = gfx.getTextSize(text)
 
-    --Чёрная подложка для читаемости на любом фоне
-    -- gfx.setColor(gfx.kColorWhite)
-    -- gfx.fillRoundRect(
-    --     math.floor(drawX - tw/2) - 3,
-    --     math.floor(drawY - th/2) - 2,
-    --     tw + 6,
-    --     th + 4,
-    --     3
-    -- )
-
-    -- Белый текст поверх подложки
     gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
-
     gfx.drawTextAligned(
         text,
         math.floor(drawX),
         math.floor(drawY - th/2),
         kTextAlignment.center
     )
-    --gfx.setImageDrawMode(gfx.kDrawModeXOR)
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)  -- сбрасываем после себя
 end

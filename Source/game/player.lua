@@ -186,7 +186,7 @@ function Player:onPortalTouch()
     if self.levelComplete then
         local px = self._lastPortalX or self.x
         local py = self._lastPortalY or self.y
-        self.levelComplete:trigger(px, py)
+        self.levelComplete:trigger()
     end
 end
 
