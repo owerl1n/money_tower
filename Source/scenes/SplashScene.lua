@@ -11,7 +11,7 @@ function SplashScene:enter(params)
     -- self._fadeTimer.easingFunction = pd.easingFunctions.outCubic
 
     self._timer = pd.timer.performAfterDelay(2000, function()
-        SceneManager.go("game", { level = 1 }, SceneManager.transitions.fade)
+        SceneManager.go("title", { level = 1 }, SceneManager.transitions.fade)
     end)
 end
 
@@ -26,7 +26,7 @@ function SplashScene:update()
     end
     if pd.buttonJustPressed(pd.kButtonA) or pd.buttonJustPressed(pd.kButtonB) then
         if self._timer then self._timer:remove() end
-        SceneManager.go("game", { level = 1 }, SceneManager.transitions.fade)
+        SceneManager.go("title", { level = 1 }, SceneManager.transitions.fade)
     end
 end
 

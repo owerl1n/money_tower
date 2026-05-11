@@ -5,7 +5,7 @@ import "CoreLibs/timer"
 import "CoreLibs/crank"
 
 import "libs/AnimatedSprite"
-import "libs/SceneManager"   -- регистрирует глобальный SceneManager
+import "libs/SceneManager"
 import "libs/LDtk"
 
 import "game/level"
@@ -18,6 +18,7 @@ import "game/levelComplete"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"
+import "scenes/TitleScene"
 
 local pd  <const> = playdate
 local gfx <const> = pd.graphics
@@ -25,6 +26,7 @@ local gfx <const> = pd.graphics
 -- Регистрируем сцены
 SceneManager.register("splash", SplashScene)
 SceneManager.register("game",   GameScene)
+SceneManager.register("title", TitleScene)
 
 pd.display.setScale(2)
 SceneManager.go("splash", nil, SceneManager.transitions.cut)

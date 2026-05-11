@@ -22,7 +22,7 @@ function GameScene:enter(params)
     blackSprite:setZIndex(1000)
     blackSprite:add()
 
-    playdate.timer.performAfterDelay(1, function()
+    pd.timer.performAfterDelay(1, function()
         self.game = Game(startLevel)
         Game.instance = self.game
         blackSprite:remove()
