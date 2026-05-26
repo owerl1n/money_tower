@@ -15,8 +15,7 @@ class('Level').extends()
 
 function Level:init(levelName)
     self.levelName = levelName
-
-    self:goToLevel("Level_0")
+    self:goToLevel(levelName)
 end
 
 
@@ -57,6 +56,7 @@ function Level:goToLevel(levelName)
     for _, entity in ipairs(ldtk.get_entities(levelName)) do
         local entityX, entityY = entity.position.x, entity.position.y
         local entityName = entity.name
+
         if entityName == "Ability" then
             Ability(entityX, entityY, entity)
         elseif entityName == "Teleport" then
@@ -67,6 +67,15 @@ function Level:goToLevel(levelName)
             AnimTile(entityX, entityY - 2, entity)
         elseif entityName == "Coin" then
             Coin(entityX, entityY, entity)
+        elseif entityName == "Spawn" then
+            self.spawnX = entityX
+            self.spawnY = entityY
         end
+    end
+
+    if not self.spawnX or not self.spawnY then
+        print("⚠️ WARNING: No Spawn entity found in level " .. levelName)
+        self.spawnX = self.spawnX or 80
+        self.spawnY = self.spawnY or 80
     end
 end

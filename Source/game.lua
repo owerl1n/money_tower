@@ -22,27 +22,46 @@ Z_INDEXES = {
     Player = 100
 }
 
-function Game:init(startLevel)
-    startLevel = startLevel or 1
+function Game:init(startLevel, onNextLevel, onRestart)
+    startLevel = startLevel or 0
 
     local world = json.decodeFile("level/world.ldtk")
     assert(world, "Не удалось загрузить world.ldtk")
 
-    local levelIndex = startLevel
-    local levelData  = world.levels[levelIndex]
-    assert(levelData, "Уровень " .. levelIndex .. " не найден в world.ldtk")
+    local levelData = world.levels[startLevel]
+    assert(levelData, "Уровень " .. startLevel .. " не найден в world.ldtk")
+    local levelName = levelData.identifier -- "Level_0", "Level_1", ...
+    print("Загружаем уровень:", levelName)
+    self.currentLevel = startLevel
 
-    print("Загружаем уровень:", levelData.identifier)
+    -- Если следующего уровня нет — onNextLevel рестартует последний
+    local totalLevels = #world.levels
+    local nextLevel   = startLevel < totalLevels and (startLevel + 1) or startLevel
 
-    self.level  = Level(levelData)
+    --print("Загружаем уровень:", levelData.identifier)
 
-    local spawnX = 100
-    local spawnY = 10
+    self.currentLevel = startLevel
 
-    self.levelComplete = LevelComplete()
-    self.player = Player(spawnX, spawnY, self.levelComplete)
+    self.levelComplete = LevelComplete(
+        startLevel,
+        function()  -- onNext
+            CoinManager.reset()
+            if onNextLevel then
+                onNextLevel(nextLevel)
+            end
+        end,
+        function()  -- onRestart
+            CoinManager.reset()
+            if onRestart then
+                onRestart(startLevel)
+            end
+        end
+    )
 
-    -- HUD теперь умеет рисовать попап монет
+    self.level  = Level(levelName)
+
+    self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
+
     self.hud = {
         draw = function()
             self.player.coinPopup:draw()
@@ -52,7 +71,6 @@ function Game:init(startLevel)
 end
 
 function Game:update()
-    -- Обновляем таймер попапа монет
     self.player.coinPopup:update()
     self.levelComplete:update()
 end

@@ -1,3 +1,4 @@
+-- Source/scenes/TitleScene.lua
 local pd  <const> = playdate
 local gfx <const> = pd.graphics
 
@@ -32,9 +33,9 @@ function TitleScene:exit()
     end
 end
 
-function TitleScene:update()    
-    print(self._ready)
+function TitleScene:update()
     if not self._ready then return end
+    if SceneManager.isTransitioning() then return end
 
     if pd.buttonJustPressed(pd.kButtonA) then
         self._ready = false
@@ -43,9 +44,6 @@ function TitleScene:update()
 end
 
 function TitleScene:draw()
-    --gfx.setColor(gfx.kColorWhite)
-    --gfx.fillRect(0, 0, 200, 120)
-    
     if self._image then
         local w, h = self._image:getSize()
         self._image:draw(100 - w / 2, 60 - h / 2)
