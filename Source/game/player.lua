@@ -75,6 +75,10 @@ end
 
 function Player:update()
     if self.dead then return end
+    if Game.instance and Game.instance.spellbook:isActive() then
+        self:updateAnimation()
+        return
+    end
 
     self:updateAnimation()
     self:updateJumpBuffer()

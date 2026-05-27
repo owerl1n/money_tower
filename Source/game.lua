@@ -62,6 +62,8 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
 
+    self.spellbook = SpellBook(self.levelComplete)
+
     self.hud = {
         draw = function()
             self.player.coinPopup:draw()
@@ -71,8 +73,21 @@ function Game:init(startLevel, onNextLevel, onRestart)
 end
 
 function Game:update()
-    self.player.coinPopup:update()
-    self.levelComplete:update()
+    self.spellbook:update()
+
+    -- Блокируем обновление мира пока книга открыта
+    if not self.spellbook:isActive() then
+        self.player.coinPopup:update()
+        self.levelComplete:update()
+    end
+end
+
+function Game:handleInput()
+    if pd.buttonJustPressed(pd.kButtonB) then
+        self.spellbook:onButtonB()
+    elseif pd.buttonJustPressed(pd.kButtonA) then
+        self.spellbook:onButtonA()
+    end
 end
 
 function Game:handleCrank(change, acceleratedChange)

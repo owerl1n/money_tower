@@ -44,14 +44,15 @@ end
 
 function GameScene:update()
     if not self.game then return end
-    -- ← блокируем обновление если идёт переход (левел комплит уже не должен ловить ввод)
     if SceneManager.isTransitioning() then return end
+    self.game:handleInput()
     self.game:update()
 end
 
 function GameScene:draw()
     if not self.game then return end
     self.game.hud:draw()
+    self.game.spellbook:draw()
 end
 
 function GameScene:cranked(change, acceleratedChange)

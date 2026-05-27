@@ -15,6 +15,7 @@ import "game/coin"
 import "game/coinManager"
 import "game/coinPopup"
 import "game/levelComplete"
+import "game/spellbook"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"
