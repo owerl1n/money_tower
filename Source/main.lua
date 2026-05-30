@@ -16,6 +16,8 @@ import "game/coinManager"
 import "game/coinPopup"
 import "game/levelComplete"
 import "game/spellbook"
+import "game/projectile"
+import "game/placedBlock"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"
@@ -39,4 +41,8 @@ function pd.update()
     SceneManager.drawOverlay()
     pd.timer.updateTimers()
     --pd.drawFPS(1,1)
+end
+
+function pd.cranked(change, acceleratedChange)
+    SceneManager.cranked(change, acceleratedChange)
 end

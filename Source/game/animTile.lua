@@ -10,8 +10,12 @@ local animations = {
     portal = { firstFrame = 1, lastFrame = 6, speed = 4 },
 }
 
+local imagetable = gfx.imagetable.new("images/portal-table-16-18")
+assert(imagetable, "no portal image has been found")
+
+
 function AnimTile:init(x, y, animName)
-    local imagetable = gfx.imagetable.new("images/portal-table-16-18")
+
     AnimTile.super.init(self, imagetable)
 
     self:addState("portal", 1, 6, {

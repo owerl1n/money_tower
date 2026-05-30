@@ -14,6 +14,8 @@ TAGS = {
     Player = 2,
     Hazard = 3,
     Portal = 4,
+    Projectile = 5,
+    Block = 6,
 }
 
 Z_INDEXES = {
@@ -62,7 +64,19 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
 
-    self.spellbook = SpellBook(self.levelComplete)
+    self.spellbook     = SpellBook(self.levelComplete, function(slot)
+        -- Сбрасываем все способности
+        self.player.dashAbility       = false
+        self.player.projectileAbility = false
+
+        if slot == 1 then
+            self.player.dashAbility = true
+            print("[Spell] Dash")
+        elseif slot == 2 then
+            self.player.projectileAbility = true
+            print("[Spell] Projectile + Block")
+        end
+    end)
 
     self.hud = {
         draw = function()
@@ -91,4 +105,5 @@ function Game:handleInput()
 end
 
 function Game:handleCrank(change, acceleratedChange)
+    self.spellbook:onCrank(change)
 end

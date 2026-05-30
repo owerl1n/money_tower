@@ -5,12 +5,17 @@ import "game/coinPopup"
 
 class('Player').extends(AnimatedSprite)
 
+playerImageTable = gfx.imagetable.new("images/mage-table-16-16")
+assert(playerImageTable, "playerImageTable not found")
+
+local SHOOT_COOLDOWN = 20
+
 function Player:init(x, y, levelComplete)
-    local playerImageTable = gfx.imagetable.new("images/mage-table-16-16")
+    
     Player.super.init(self, playerImageTable)
 
     self:addState("idle", 1, 1)
-    self:addState("run", 1, 1, {tickStep = 4})
+    self:addState("run", 1, 1)
     self:addState("jump", 1, 1)
     self:addState("dash", 1, 1)
     self:playAnimation()
@@ -58,6 +63,13 @@ function Player:init(x, y, levelComplete)
     -- Попап монет над игроком
     self.coinPopup = CoinPopup(self)
 
+    -- Spell: projectile
+    self.projectileAbility = false
+    self._shootCooldown    = 0
+
+    -- Spell: place block
+    self._lastProjectile   = nil
+
     self.levelComplete = levelComplete
 end
 
@@ -81,6 +93,11 @@ function Player:update()
     end
 
     self:updateAnimation()
+
+    if not (Game.instance and Game.instance.spellbook:isActive()) then
+        self:handleAbilityInput()
+    end
+
     self:updateJumpBuffer()
     self:handleState()
     self:handleMovementAndCollisions()
@@ -128,6 +145,36 @@ function Player:handleState()
         if math.abs(self.xVelocity) <= self.dashMinimumSpeed then
             self:changeToFallState()
         end
+    end
+end
+
+function Player:handleAbilityInput()
+    if self._shootCooldown > 0 then
+        self._shootCooldown -= 1
+    end
+
+    if self.projectileAbility and pd.buttonJustPressed(pd.kButtonUp) then
+        -- Если снаряд уже летит — ставим блок
+        if self._lastProjectile and self._lastProjectile.x then
+            PlacedBlock(
+                math.floor(self._lastProjectile.x / 16) * 16 + 8,
+                math.floor(self._lastProjectile.y / 16) * 16 + 8
+            )
+            self._lastProjectile:remove()
+            self._lastProjectile = nil
+            print("[Player] блок размещён")
+        -- Иначе стреляем
+        elseif self._shootCooldown <= 0 then
+            local dir = (self.globalFlip == 1) and -1 or 1
+            local p = Projectile(self.x + dir * 10, self.y, dir)
+            self._lastProjectile = p
+            self._shootCooldown  = SHOOT_COOLDOWN
+            print("[Player] выстрел dir=" .. dir)
+        end
+    end
+
+    if self._lastProjectile and self._lastProjectile.destroyed then
+        self._lastProjectile = nil
     end
 end
 
@@ -224,7 +271,7 @@ function Player:handleAirInput()
     if self:playerJumped() and self.doubleJumpAvailable and self.doubleJumpAbility then
         self.doubleJumpAvailable = false
         self:changeToJumpState()
-    elseif pd.buttonJustPressed(pd.kButtonB) and self.dashAvailable and self.dashAbility then
+    elseif pd.buttonJustPressed(pd.kButtonUp) and self.dashAvailable and self.dashAbility then
         self:changeToDashState()
     elseif pd.buttonIsPressed(pd.kButtonLeft) then
         self.xVelocity = -self.maxSpeed
@@ -292,4 +339,12 @@ function Player:applyDrag(amount)
     if math.abs(self.xVelocity) < self.minimumAirSpeed or self.touchingWall then
         self.xVelocity = 0
     end
+end
+
+function Player:collisionResponse(other)
+    local tag = other:getTag()
+    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Portal or tag == TAGS.Projectile then
+        return gfx.sprite.kCollisionTypeOverlap
+    end
+    return gfx.sprite.kCollisionTypeSlide
 end
