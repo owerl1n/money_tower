@@ -28,14 +28,19 @@ function Player:init(x, y, levelComplete)
     -- Physics
     self.xVelocity = 0
     self.yVelocity = 0
-    self.gravity = 1.0
+    self.gravity = 0.85
     self.maxSpeed = 2
-    self.jumpVelocity = -6
+    self.jumpVelocity = -4.5
     self.drag = 0.1
     self.minimumAirSpeed = 0.5
 
+    -- jump
     self.jumpBufferAmount = 5
     self.jumpBuffer = 0
+    self.jumpHoldForce       = -0.4 -- дополнительная сила пока A зажата
+    self.jumpHoldMaxFrames   = 8 -- сколько кадров можно "подкачивать"
+    self.jumpHoldFrames      = 0 -- счётчик
+    self.jumpMinCutoffSpeed  = -1.4 -- минимальная скорость вверх при отпускании
 
     -- Abilities
     self.doubleJumpAbility = false
@@ -124,6 +129,7 @@ function Player:handleState()
         else
             self:handleGroundInput()
         end
+
     elseif self.currentState == "run" then
         self:applyGravity()
         if self.atPortal then
@@ -131,15 +137,31 @@ function Player:handleState()
         else
             self:handleGroundInput()
         end
+
     elseif self.currentState == "jump" then
-        -- в воздухе: гравитация и drag всегда работают,
-        -- горизонтальный ввод блокируем если у портала
         if self.touchingGround then self:changeToIdleState() end
         self:applyGravity()
         self:applyDrag(self.drag)
-        if not self.atPortal then
-            self:handleAirInput()
+
+        -- Variable jump height
+        if self.jumpHoldFrames > 0 then
+            if pd.buttonIsPressed(pd.kButtonA) then
+                -- держим — добавляем силу вверх
+                self.yVelocity += self.jumpHoldForce
+                self.jumpHoldFrames -= 1
+            else
+                -- отпустили — обрезаем скорость вверх
+                self.jumpHoldFrames = 0
+                if self.yVelocity < self.jumpMinCutoffSpeed then
+                    self.yVelocity = self.jumpMinCutoffSpeed
+                end
+            end
         end
+
+    if not self.atPortal then
+        self:handleAirInput()
+    end
+
     elseif self.currentState == "dash" then
         self:applyDrag(self.dashDrag)
         if math.abs(self.xVelocity) <= self.dashMinimumSpeed then
@@ -153,7 +175,7 @@ function Player:handleAbilityInput()
         self._shootCooldown -= 1
     end
 
-    if self.projectileAbility and pd.buttonJustPressed(pd.kButtonUp) then
+    if self.projectileAbility and pd.buttonJustPressed(pd.kButtonDown) then
         -- Если снаряд уже летит — ставим блок
         if self._lastProjectile and self._lastProjectile.x then
             PlacedBlock(
@@ -200,6 +222,7 @@ function Player:handleMovementAndCollisions()
                 self.dashAvailable = true
             elseif collision.normal.y == 1 then
                 self.touchingCeiling = true
+                self.jumpHoldFrames = 0
             end
             if collision.normal.x ~= 0 then
                 self.touchingWall = true
@@ -271,7 +294,7 @@ function Player:handleAirInput()
     if self:playerJumped() and self.doubleJumpAvailable and self.doubleJumpAbility then
         self.doubleJumpAvailable = false
         self:changeToJumpState()
-    elseif pd.buttonJustPressed(pd.kButtonUp) and self.dashAvailable and self.dashAbility then
+    elseif pd.buttonJustPressed(pd.kButtonDown) and self.dashAvailable and self.dashAbility then
         self:changeToDashState()
     elseif pd.buttonIsPressed(pd.kButtonLeft) then
         self.xVelocity = -self.maxSpeed
@@ -299,6 +322,7 @@ end
 function Player:changeToJumpState()
     self.yVelocity = self.jumpVelocity
     self.jumpBuffer = 0
+    self.jumpHoldFrames = self.jumpHoldMaxFrames  -- начинаем отсчёт
     self:changeState("jump")
 end
 
