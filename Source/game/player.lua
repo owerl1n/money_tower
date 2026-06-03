@@ -75,6 +75,12 @@ function Player:init(x, y, levelComplete)
     -- Spell: place block
     self._lastProjectile   = nil
 
+    -- Spell: anchor
+    self.anchorAbility       = false
+    self._anchorX            = nil
+    self._anchorY            = nil
+    self._anchorMarker       = nil
+
     self.levelComplete = levelComplete
 end
 
@@ -171,21 +177,30 @@ function Player:handleState()
 end
 
 function Player:handleAbilityInput()
+    self:handleAnchorInput()
+
     if self._shootCooldown > 0 then
         self._shootCooldown -= 1
     end
 
     if self.projectileAbility and pd.buttonJustPressed(pd.kButtonDown) then
-        -- Если снаряд уже летит — ставим блок
         if self._lastProjectile and self._lastProjectile.x then
-            PlacedBlock(
-                math.floor(self._lastProjectile.x / 16) * 16 + 8,
-                math.floor(self._lastProjectile.y / 16) * 16 + 8
-            )
-            self._lastProjectile:remove()
-            self._lastProjectile = nil
-            print("[Player] блок размещён")
-        -- Иначе стреляем
+            -- Проверяем: снаряд не над меткой якоря
+            local overAnchor = self._anchorMarker and
+                math.abs(self._lastProjectile.x - self._anchorMarker.x) < 10 and
+                math.abs(self._lastProjectile.y - self._anchorMarker.y) < 10
+
+            if not overAnchor then
+                PlacedBlock(
+                    math.floor(self._lastProjectile.x / 16) * 16 + 8,
+                    math.floor(self._lastProjectile.y / 16) * 16 + 8
+                )
+                self._lastProjectile:remove()
+                self._lastProjectile = nil
+                print("[Player] блок размещён")
+            else
+                print("[Player] блок заблокирован — снаряд над меткой якоря")
+            end
         elseif self._shootCooldown <= 0 then
             local dir = (self.globalFlip == 1) and -1 or 1
             local p = Projectile(self.x + dir * 10, self.y, dir)
@@ -199,6 +214,37 @@ function Player:handleAbilityInput()
         self._lastProjectile = nil
     end
 end
+
+
+function Player:clearAnchor()
+    self._anchorX = nil
+    self._anchorY = nil
+    if self._anchorMarker then
+        self._anchorMarker:remove()
+        self._anchorMarker = nil
+    end
+end
+
+function Player:handleAnchorInput()
+    --print("[Anchor] ability=" .. tostring(self.anchorAbility))
+    if not self.anchorAbility then return end
+    if not pd.buttonJustPressed(pd.kButtonDown) then return end
+
+    if self._anchorX then
+        local tx, ty = self._anchorX, self._anchorY
+        self:clearAnchor()
+        self:moveTo(tx, ty)
+        self.xVelocity = 0
+        -- yVelocity намеренно сохраняем
+        print("[Anchor] teleport to " .. tx .. "," .. ty)
+    else
+        self._anchorX = self.x
+        self._anchorY = self.y
+        self._anchorMarker = AnchorMarker(self.x, self.y)
+        print("[Anchor] placed at " .. self.x .. "," .. self.y)
+    end
+end
+
 
 function Player:handleMovementAndCollisions()
     local _, _, collisions, length = self:moveWithCollisions(self.x + self.xVelocity, self.y + self.yVelocity)
@@ -367,7 +413,8 @@ end
 
 function Player:collisionResponse(other)
     local tag = other:getTag()
-    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Portal or tag == TAGS.Projectile then
+    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Portal
+       or tag == TAGS.Projectile or tag == TAGS.AnchorMark then
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide

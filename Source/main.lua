@@ -18,6 +18,7 @@ import "game/levelComplete"
 import "game/spellbook"
 import "game/projectile"
 import "game/placedBlock"
+import "game/anchorMarker"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

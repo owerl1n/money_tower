@@ -1,11 +1,10 @@
--- game/spells.lua
 SPELLS = {
     {
-        id      = "fireball",
-        glyph   = 1,        -- индекс в glyphs-table
-        name    = "Fireball",
-        onEquip = function(player) player.fireballAbility = true end,
-        onUnequip = function(player) player.fireballAbility = false end,
+        id      = "block",
+        glyph   = 1,
+        name    = "Block",
+        onEquip   = function(player) player.projectileAbility = true end,
+        onUnequip = function(player) player.projectileAbility = false end,
     },
     {
         id      = "dash",
@@ -14,5 +13,14 @@ SPELLS = {
         onEquip   = function(player) player.dashAbility = true end,
         onUnequip = function(player) player.dashAbility = false end,
     },
-    -- добавляй сюда сколько угодно
+    {
+        id      = "anchor",
+        glyph   = 4,            -- нужен третий глиф в glyphs-table
+        name    = "Anchor",
+        onEquip   = function(player) player.anchorAbility = true end,
+        onUnequip = function(player)
+            player.anchorAbility = false
+            player:clearAnchor()
+        end,
+    },
 }

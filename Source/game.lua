@@ -16,6 +16,7 @@ TAGS = {
     Portal = 4,
     Projectile = 5,
     Block = 6,
+    AnchorMark = 7,
 }
 
 Z_INDEXES = {
@@ -65,16 +66,16 @@ function Game:init(startLevel, onNextLevel, onRestart)
     self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
 
     self.spellbook     = SpellBook(self.levelComplete, function(slot)
-        -- Сбрасываем все способности
-        self.player.dashAbility       = false
-        self.player.projectileAbility = false
+        for _, spell in ipairs(SPELLS) do
+            if spell.onUnequip then
+                spell.onUnequip(self.player)
+            end
+        end
 
-        if slot == 1 then
-            self.player.dashAbility = true
-            print("[Spell] Dash")
-        elseif slot == 2 then
-            self.player.projectileAbility = true
-            print("[Spell] Projectile + Block")
+        local spell = SPELLS[slot]
+        if spell and spell.onEquip then
+            spell.onEquip(self.player)
+            print("[Spell] equipped: " .. spell.name)
         end
     end)
 

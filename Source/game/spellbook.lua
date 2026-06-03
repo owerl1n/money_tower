@@ -3,6 +3,7 @@ local gfx <const> = playdate.graphics
 local ease <const> = pd.easingFunctions
 
 import "libs/AnimatedSprite"
+import "game/spells"
 
 class('SpellBook').extends(AnimatedSprite)
 
@@ -15,8 +16,9 @@ local SLIDE_IN_MS  = 350
 local SLIDE_OUT_MS = 250
 
 -- Позиции иконок внутри книги (относительно центра книги)
-local ICON_OFFSET_Y_TOP    = -28   -- верхняя иконка
-local ICON_OFFSET_Y_BOTTOM =  20   -- нижняя иконка
+local ICON_OFFSET_Y_TOP    = -28
+local ICON_OFFSET_Y_MID    =  -4   -- ← новый средний слот
+local ICON_OFFSET_Y_BOTTOM =  20
 local ICON_SCALE           = 1.0   -- масштаб (если хочешь нарисуй x2 сам и убери scale)
 
 local CRANK_THRESHOLD = 90  -- градусов для переключения
@@ -62,8 +64,9 @@ function SpellBook:init(levelComplete, onSpellSelected)
     assert(self._glyphs, "SpellBook: не удалось загрузить images/glyphs-table-16-16")
 
     -- Текущий выбранный слот: 1 (верх) или 2 (низ)
-    self._selectedSlot  = 1
-    self._crankAccum    = 0   -- накопленный угол кранка
+    self._selectedSlot    = 1
+    --self._slotCount       = #SPELLS -- ← вместо захардкоженного 2
+    self._crankAccum      = 0
 
     self._onSpellSelected = onSpellSelected
 end
@@ -94,14 +97,15 @@ function SpellBook:onCrank(change)
     if self._bookState ~= "open" then return end
 
     self._crankAccum += change
-    
 
     if self._crankAccum >= CRANK_THRESHOLD then
         self._crankAccum = 0
-        self:_selectSlot(2)
+        local next = self._selectedSlot % #SPELLS + 1
+        self:_selectSlot(next)
     elseif self._crankAccum <= -CRANK_THRESHOLD then
         self._crankAccum = 0
-        self:_selectSlot(1)
+        local prev = (self._selectedSlot - 2) % #SPELLS + 1
+        self:_selectSlot(prev)
     end
 end
 
@@ -128,8 +132,7 @@ end
 function SpellBook:_selectSlot(slot)
     if self._selectedSlot == slot then return end
     self._selectedSlot = slot
-    local name = slot == 1 and "TOP" or "BOTTOM"
-    print("[SpellBook] выбрано: " .. name .. " (слот " .. slot .. ")")
+    print("[SpellBook] выбрано: слот " .. slot .. " (" .. (SPELLS[slot] and SPELLS[slot].name or "?") .. ")")
 end
 
 function SpellBook:_drawIcons()
@@ -138,32 +141,38 @@ function SpellBook:_drawIcons()
     local bx = math.floor(self.x)
     local by = math.floor(self.y)
 
-    local icon1 = self._glyphs[1]
-    local icon2 = self._glyphs[2]
-    if not icon1 or not icon2 then return end
+    local offsets = {
+        ICON_OFFSET_Y_TOP,
+        ICON_OFFSET_Y_MID,
+        ICON_OFFSET_Y_BOTTOM,
+    }
 
-    local iw, ih = icon1:getSize()  -- 16×16
+    -- Иконки X-позиции: верхняя правее, нижние левее (под форму книги)
+    local xOffsets = { 30, 18, 0 }
 
-    -- Позиции центров иконок
-    local topX    = bx + 30
-    local topY    = by + ICON_OFFSET_Y_TOP
-    local bottomX = bx
-    local bottomY = by + ICON_OFFSET_Y_BOTTOM
+    for i = 1, math.min(#SPELLS, 3) do
+        local spell = SPELLS[i]
+        local icon  = self._glyphs[spell.glyph]
+        if not icon then goto continue end
 
-    -- Рисуем иконки через drawScaled (или drawWithTransform если нужен пиксель-идеал)
-    local function drawIconScaled(icon, cx, cy, scale)
-        local dw = iw * scale
-        local dh = ih * scale
-        icon:drawScaled(math.floor(cx - dw / 2), math.floor(cy - dh / 2), scale)
+        local iw, ih = icon:getSize()
+        local cx = bx + xOffsets[i]
+        local cy = by + offsets[i]
+
+        icon:draw(math.floor(cx - iw / 2), math.floor(cy - ih / 2))
+
+        -- Индикатор выбора: маленький прямоугольник слева от активной иконки
+        if self._selectedSlot == i then
+            gfx.setColor(gfx.kColorBlack)
+            gfx.fillRect(
+                math.floor(cx - iw / 2) - 6,
+                math.floor(cy - 3),
+                4, 6
+            )
+        end
+
+        ::continue::
     end
-    drawIconScaled(icon1, topX,    topY,    ICON_SCALE)
-    drawIconScaled(icon2, bottomX, bottomY, ICON_SCALE)
-    --rectangle
-    -- Индикатор выбора: маленький прямоугольник слева от активной иконки
-    gfx.setColor(gfx.kColorBlack)
-    local selY = (self._selectedSlot == 1) and topY or bottomY
-    local selX = bx - (iw * ICON_SCALE) / 2 + 36
-    gfx.fillRect(math.floor(selX), math.floor(selY - 3), 4, 6)
 end
 
 -- ── Внутренние: анимация ──────────────────────────────────────────────────────
@@ -182,10 +191,10 @@ function SpellBook:_close()
         self._slideTimer:remove()
         self._slideTimer = nil
     end
-    -- Сообщаем о выборе перед закрытием
     if self._onSpellSelected then
         self._onSpellSelected(self._selectedSlot)
     end
+    -- остальное без изменений
     self._bookState = "closing"
     self:moveTo(TARGET_X, TARGET_Y)
     self:changeState("closing")
