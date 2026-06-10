@@ -17,6 +17,7 @@ TAGS = {
     Projectile = 5,
     Block = 6,
     AnchorMark = 7,
+    BounceBlock = 8,
 }
 
 Z_INDEXES = {

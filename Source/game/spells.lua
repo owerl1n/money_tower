@@ -15,12 +15,19 @@ SPELLS = {
     },
     {
         id      = "anchor",
-        glyph   = 4,            -- нужен третий глиф в glyphs-table
+        glyph   = 4,
         name    = "Anchor",
         onEquip   = function(player) player.anchorAbility = true end,
         onUnequip = function(player)
             player.anchorAbility = false
             player:clearAnchor()
         end,
+    },
+    {
+        id        = "bounceblock",
+        glyph     = 3,
+        name      = "BounceBlock",
+        onEquip   = function(player) player.bounceBlockAbility = true end,
+        onUnequip = function(player) player.bounceBlockAbility = false end,
     },
 }

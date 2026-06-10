@@ -19,6 +19,7 @@ import "game/spellbook"
 import "game/projectile"
 import "game/placedBlock"
 import "game/anchorMarker"
+import "game/bounceBlock"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

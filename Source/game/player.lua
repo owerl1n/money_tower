@@ -11,7 +11,6 @@ assert(playerImageTable, "playerImageTable not found")
 local SHOOT_COOLDOWN = 20
 
 function Player:init(x, y, levelComplete)
-    
     Player.super.init(self, playerImageTable)
 
     self:addState("idle", 1, 1)
@@ -26,62 +25,69 @@ function Player:init(x, y, levelComplete)
     self:setTag(TAGS.Player)
 
     -- Physics
-    self.xVelocity = 0
-    self.yVelocity = 0
-    self.gravity = 0.85
-    self.maxSpeed = 2
-    self.jumpVelocity = -4.5
-    self.drag = 0.1
-    self.minimumAirSpeed = 0.5
+    self.xVelocity             = 0
+    self.yVelocity             = 0
+    self.gravity               = 0.85
+    self.maxSpeed              = 2
+    self.jumpVelocity          = -4.5
+    self.drag                  = 0.1
+    self.minimumAirSpeed       = 0.5
 
     -- jump
-    self.jumpBufferAmount = 5
-    self.jumpBuffer = 0
-    self.jumpHoldForce       = -0.4 -- дополнительная сила пока A зажата
-    self.jumpHoldMaxFrames   = 8 -- сколько кадров можно "подкачивать"
-    self.jumpHoldFrames      = 0 -- счётчик
-    self.jumpMinCutoffSpeed  = -1.4 -- минимальная скорость вверх при отпускании
+    self.jumpBufferAmount      = 5
+    self.jumpBuffer            = 0
+    self.jumpHoldForce         = -0.4 -- дополнительная сила пока A зажата
+    self.jumpHoldMaxFrames     = 8  -- сколько кадров можно "подкачивать"
+    self.jumpHoldFrames        = 0  -- счётчик
+    self.jumpMinCutoffSpeed    = -1.4 -- минимальная скорость вверх при отпускании
 
     -- Abilities
-    self.doubleJumpAbility = false
-    self.dashAbility = false
+    self.doubleJumpAbility     = false
+    self.dashAbility           = false
 
     -- Double Jump
-    self.doubleJumpAvailable = true
+    self.doubleJumpAvailable   = true
 
     -- Dash
-    self.dashAvailable = true
-    self.dashSpeed = 8
-    self.dashMinimumSpeed = 3
-    self.dashDrag = 0.8
+    self.dashAvailable         = true
+    self.dashSpeed             = 8
+    self.dashMinimumSpeed      = 3
+    self.dashDrag              = 0.8
 
     -- State
-    self.touchingGround = false
-    self.touchingCeiling = false
-    self.touchingWall = false
-    self.dead = false
+    self.touchingGround        = false
+    self.touchingCeiling       = false
+    self.touchingWall          = false
+    self.dead                  = false
 
     -- При касании портала блокируем только горизонтальный ввод
     -- Физика (гравитация, падение) продолжает работать
-    self.atPortal = false
+    self.atPortal              = false
 
     -- Попап монет над игроком
-    self.coinPopup = CoinPopup(self)
+    self.coinPopup             = CoinPopup(self)
 
     -- Spell: projectile
-    self.projectileAbility = false
-    self._shootCooldown    = 0
+    self.projectileAbility     = false
+    self._shootCooldown        = 0
 
     -- Spell: place block
-    self._lastProjectile   = nil
+    self._lastProjectile       = nil
 
     -- Spell: anchor
-    self.anchorAbility       = false
-    self._anchorX            = nil
-    self._anchorY            = nil
-    self._anchorMarker       = nil
+    self.anchorAbility         = false
+    self._anchorX              = nil
+    self._anchorY              = nil
+    self._anchorMarker         = nil
 
-    self.levelComplete = levelComplete
+    -- BounceBlock
+    self._fallFromY            = nil
+    self._peakY                = nil
+    self.bounceBlockAbility    = false
+    self._lastBounceProjectile = nil
+    self._bounceShootCooldown  = 0
+
+    self.levelComplete         = levelComplete
 end
 
 function Player:showCoinPopup(amount)
@@ -135,7 +141,6 @@ function Player:handleState()
         else
             self:handleGroundInput()
         end
-
     elseif self.currentState == "run" then
         self:applyGravity()
         if self.atPortal then
@@ -143,9 +148,11 @@ function Player:handleState()
         else
             self:handleGroundInput()
         end
-
     elseif self.currentState == "jump" then
         if self.touchingGround then self:changeToIdleState() end
+        if self._peakY == nil or self.y < self._peakY then
+            self._peakY = self.y
+        end
         self:applyGravity()
         self:applyDrag(self.drag)
 
@@ -164,10 +171,9 @@ function Player:handleState()
             end
         end
 
-    if not self.atPortal then
-        self:handleAirInput()
-    end
-
+        if not self.atPortal then
+            self:handleAirInput()
+        end
     elseif self.currentState == "dash" then
         self:applyDrag(self.dashDrag)
         if math.abs(self.xVelocity) <= self.dashMinimumSpeed then
@@ -202,8 +208,8 @@ function Player:handleAbilityInput()
                 print("[Player] блок заблокирован — снаряд над меткой якоря")
             end
         elseif self._shootCooldown <= 0 then
-            local dir = (self.globalFlip == 1) and -1 or 1
-            local p = Projectile(self.x + dir * 10, self.y, dir)
+            local dir            = (self.globalFlip == 1) and -1 or 1
+            local p              = Projectile(self.x + dir * 10, self.y, dir)
             self._lastProjectile = p
             self._shootCooldown  = SHOOT_COOLDOWN
             print("[Player] выстрел dir=" .. dir)
@@ -213,8 +219,31 @@ function Player:handleAbilityInput()
     if self._lastProjectile and self._lastProjectile.destroyed then
         self._lastProjectile = nil
     end
-end
 
+    if self._bounceShootCooldown > 0 then
+        self._bounceShootCooldown -= 1
+    end
+
+    if self.bounceBlockAbility and pd.buttonJustPressed(pd.kButtonUp) then
+        if self._lastBounceProjectile and self._lastBounceProjectile.x then
+            BounceBlock(
+                math.floor(self._lastBounceProjectile.x / 16) * 16 + 8,
+                math.floor(self._lastBounceProjectile.y / 16) * 16 + 8
+            )
+            self._lastBounceProjectile:remove()
+            self._lastBounceProjectile = nil
+        elseif self._bounceShootCooldown <= 0 then
+            local dir                  = (self.globalFlip == 1) and -1 or 1
+            local p                    = Projectile(self.x + dir * 10, self.y, dir)
+            self._lastBounceProjectile = p
+            self._bounceShootCooldown  = SHOOT_COOLDOWN
+        end
+    end
+
+    if self._lastBounceProjectile and self._lastBounceProjectile.destroyed then
+        self._lastBounceProjectile = nil
+    end
+end
 
 function Player:clearAnchor()
     self._anchorX = nil
@@ -244,7 +273,6 @@ function Player:handleAnchorInput()
         print("[Anchor] placed at " .. self.x .. "," .. self.y)
     end
 end
-
 
 function Player:handleMovementAndCollisions()
     local _, _, collisions, length = self:moveWithCollisions(self.x + self.xVelocity, self.y + self.yVelocity)
@@ -284,6 +312,19 @@ function Player:handleMovementAndCollisions()
             self._lastPortalX = collisionObject.x + 8
             self._lastPortalY = collisionObject.y
             --print(touchedPortal)
+        elseif collisionTag == TAGS.BounceBlock then
+            if collision.normal.y == -1 then
+                local peakY              = self._peakY or self.y
+                local heightAbove        = self.y - peakY -- положительное число, пикселей
+                self.yVelocity           = BounceBlock.getBounceVelocity(math.max(heightAbove, 0))
+                -- НЕ выдаём doubleJump — отскок сам по себе
+                self.doubleJumpAvailable = false
+                self.dashAvailable       = true
+                self._peakY              = self.y -- начинаем новый отсчёт с блока
+                self.touchingGround      = false
+                self:changeState("jump")
+                print("[BounceBlock] высота=" .. math.floor(heightAbove) .. " v=" .. self.yVelocity)
+            end
         end
     end
 
@@ -350,11 +391,13 @@ function Player:handleAirInput()
 end
 
 function Player:changeToIdleState()
+    self._peakY = nil
     self.xVelocity = 0
     self:changeState("idle")
 end
 
 function Player:changeToRunState(direction)
+    self._peakY = nil
     if direction == "left" then
         self.xVelocity = -self.maxSpeed
         self.globalFlip = 1
@@ -366,9 +409,10 @@ function Player:changeToRunState(direction)
 end
 
 function Player:changeToJumpState()
+    self._peakY = self.y
     self.yVelocity = self.jumpVelocity
     self.jumpBuffer = 0
-    self.jumpHoldFrames = self.jumpHoldMaxFrames  -- начинаем отсчёт
+    self.jumpHoldFrames = self.jumpHoldMaxFrames -- начинаем отсчёт
     self:changeState("jump")
 end
 
@@ -414,7 +458,7 @@ end
 function Player:collisionResponse(other)
     local tag = other:getTag()
     if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Portal
-       or tag == TAGS.Projectile or tag == TAGS.AnchorMark then
+        or tag == TAGS.Projectile or tag == TAGS.AnchorMark then
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide
