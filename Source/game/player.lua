@@ -224,7 +224,7 @@ function Player:handleAbilityInput()
         self._bounceShootCooldown -= 1
     end
 
-    if self.bounceBlockAbility and pd.buttonJustPressed(pd.kButtonUp) then
+    if self.bounceBlockAbility and pd.buttonJustPressed(pd.kButtonDown) then
         if self._lastBounceProjectile and self._lastBounceProjectile.x then
             BounceBlock(
                 math.floor(self._lastBounceProjectile.x / 16) * 16 + 8,
@@ -314,16 +314,14 @@ function Player:handleMovementAndCollisions()
             --print(touchedPortal)
         elseif collisionTag == TAGS.BounceBlock then
             if collision.normal.y == -1 then
-                local peakY              = self._peakY or self.y
-                local heightAbove        = self.y - peakY -- положительное число, пикселей
-                self.yVelocity           = BounceBlock.getBounceVelocity(math.max(heightAbove, 0))
-                -- НЕ выдаём doubleJump — отскок сам по себе
+                local targetY            = self._peakY or (self.y - 40)
+                self.yVelocity           = BounceBlock.getBounceVelocity(self.gravity, targetY, self.y)
                 self.doubleJumpAvailable = false
                 self.dashAvailable       = true
-                self._peakY              = self.y -- начинаем новый отсчёт с блока
+                self._peakY              = targetY -- цель не сбрасываем
                 self.touchingGround      = false
                 self:changeState("jump")
-                print("[BounceBlock] высота=" .. math.floor(heightAbove) .. " v=" .. self.yVelocity)
+                print("[BounceBlock] targetY=" .. math.floor(targetY) .. " v=" .. string.format("%.2f", self.yVelocity))
             end
         end
     end

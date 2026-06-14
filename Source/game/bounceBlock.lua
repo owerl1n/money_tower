@@ -31,8 +31,10 @@ function BounceBlock:init(x, y)
 end
 
 -- Вычисляет импульс отскока по высоте падения (в пикселях выше блока)
-function BounceBlock.getBounceVelocity(heightAbove)
-    local t = math.min(heightAbove / HEIGHT_SCALE, 1.0)
-    -- линейная интерполяция между min и max
-    return BOUNCE_MIN + (BOUNCE_MAX - BOUNCE_MIN) * t
+function BounceBlock.getBounceVelocity(gravity, targetY, currentY)
+    local pixelsToRise = currentY - targetY
+    if pixelsToRise <= 0 then
+        return -math.sqrt(2 * gravity * 4)
+    end
+    return -math.sqrt(2 * gravity * pixelsToRise)
 end
