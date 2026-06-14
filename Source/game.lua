@@ -34,15 +34,12 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     local levelData = world.levels[startLevel]
     assert(levelData, "Уровень " .. startLevel .. " не найден в world.ldtk")
-    local levelName = levelData.identifier -- "Level_0", "Level_1", ...
+    local levelName = levelData.identifier
     print("Загружаем уровень:", levelName)
     self.currentLevel = startLevel
 
-    -- Если следующего уровня нет — onNextLevel рестартует последний
     local totalLevels = #world.levels
     local nextLevel   = startLevel < totalLevels and (startLevel + 1) or startLevel
-
-    --print("Загружаем уровень:", levelData.identifier)
 
     self.currentLevel = startLevel
 
@@ -66,7 +63,7 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
 
-    self.spellbook     = SpellBook(self.levelComplete, function(slot)
+    self.spellbook = SpellBook(self.levelComplete, function(slot)
         for _, spell in ipairs(SPELLS) do
             if spell.onUnequip then
                 spell.onUnequip(self.player)
@@ -80,6 +77,13 @@ function Game:init(startLevel, onNextLevel, onRestart)
         end
     end)
 
+    -- Применяем заклинание Block по умолчанию (слот 1)
+    local defaultSpell = SPELLS[1]
+    if defaultSpell and defaultSpell.onEquip then
+        defaultSpell.onEquip(self.player)
+        print("[Spell] default equipped: " .. defaultSpell.name)
+    end
+
     self.hud = {
         draw = function()
             self.player.coinPopup:draw()
@@ -91,7 +95,6 @@ end
 function Game:update()
     self.spellbook:update()
 
-    -- Блокируем обновление мира пока книга открыта
     if not self.spellbook:isActive() then
         self.player.coinPopup:update()
         self.levelComplete:update()
@@ -99,13 +102,26 @@ function Game:update()
 end
 
 function Game:handleInput()
+    -- Когда книга открыта — ▲/▼ переключают слоты, A/B закрывают
+    if self.spellbook:isActive() then
+        if pd.buttonJustPressed(pd.kButtonUp) then
+            self.spellbook:onUp()
+        elseif pd.buttonJustPressed(pd.kButtonDown) then
+            self.spellbook:onDown()
+        elseif pd.buttonJustPressed(pd.kButtonB) then
+            self.spellbook:onButtonB()
+        elseif pd.buttonJustPressed(pd.kButtonA) then
+            self.spellbook:onButtonA()
+        end
+        return
+    end
+
+    -- Книга закрыта — B открывает книгу
     if pd.buttonJustPressed(pd.kButtonB) then
         self.spellbook:onButtonB()
-    elseif pd.buttonJustPressed(pd.kButtonA) then
-        self.spellbook:onButtonA()
     end
 end
 
 function Game:handleCrank(change, acceleratedChange)
-    self.spellbook:onCrank(change)
+    -- кранк больше не используется для книги
 end

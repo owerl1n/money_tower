@@ -36,10 +36,10 @@ function Player:init(x, y, levelComplete)
     -- jump
     self.jumpBufferAmount      = 5
     self.jumpBuffer            = 0
-    self.jumpHoldForce         = -0.4 -- дополнительная сила пока A зажата
-    self.jumpHoldMaxFrames     = 8  -- сколько кадров можно "подкачивать"
-    self.jumpHoldFrames        = 0  -- счётчик
-    self.jumpMinCutoffSpeed    = -1.4 -- минимальная скорость вверх при отпускании
+    self.jumpHoldForce         = -0.4
+    self.jumpHoldMaxFrames     = 8
+    self.jumpHoldFrames        = 0
+    self.jumpMinCutoffSpeed    = -1.4
 
     -- Abilities
     self.doubleJumpAbility     = false
@@ -60,18 +60,14 @@ function Player:init(x, y, levelComplete)
     self.touchingWall          = false
     self.dead                  = false
 
-    -- При касании портала блокируем только горизонтальный ввод
-    -- Физика (гравитация, падение) продолжает работать
     self.atPortal              = false
 
-    -- Попап монет над игроком
     self.coinPopup             = CoinPopup(self)
 
     -- Spell: projectile
     self.projectileAbility     = false
     self._shootCooldown        = 0
 
-    -- Spell: place block
     self._lastProjectile       = nil
 
     -- Spell: anchor
@@ -136,7 +132,6 @@ function Player:handleState()
     if self.currentState == "idle" then
         self:applyGravity()
         if self.atPortal then
-            -- только стоим, не реагируем на ввод
             self.xVelocity = 0
         else
             self:handleGroundInput()
@@ -159,11 +154,9 @@ function Player:handleState()
         -- Variable jump height
         if self.jumpHoldFrames > 0 then
             if pd.buttonIsPressed(pd.kButtonA) then
-                -- держим — добавляем силу вверх
                 self.yVelocity += self.jumpHoldForce
                 self.jumpHoldFrames -= 1
             else
-                -- отпустили — обрезаем скорость вверх
                 self.jumpHoldFrames = 0
                 if self.yVelocity < self.jumpMinCutoffSpeed then
                     self.yVelocity = self.jumpMinCutoffSpeed
@@ -191,7 +184,6 @@ function Player:handleAbilityInput()
 
     if self.projectileAbility and pd.buttonJustPressed(pd.kButtonDown) then
         if self._lastProjectile and self._lastProjectile.x then
-            -- Проверяем: снаряд не над меткой якоря
             local overAnchor = self._anchorMarker and
                 math.abs(self._lastProjectile.x - self._anchorMarker.x) < 10 and
                 math.abs(self._lastProjectile.y - self._anchorMarker.y) < 10
@@ -255,7 +247,6 @@ function Player:clearAnchor()
 end
 
 function Player:handleAnchorInput()
-    --print("[Anchor] ability=" .. tostring(self.anchorAbility))
     if not self.anchorAbility then return end
     if not pd.buttonJustPressed(pd.kButtonDown) then return end
 
@@ -264,7 +255,6 @@ function Player:handleAnchorInput()
         self:clearAnchor()
         self:moveTo(tx, ty)
         self.xVelocity = 0
-        -- yVelocity намеренно сохраняем
         print("[Anchor] teleport to " .. tx .. "," .. ty)
     else
         self._anchorX = self.x
@@ -311,14 +301,13 @@ function Player:handleMovementAndCollisions()
             touchedPortal = true
             self._lastPortalX = collisionObject.x + 8
             self._lastPortalY = collisionObject.y
-            --print(touchedPortal)
         elseif collisionTag == TAGS.BounceBlock then
             if collision.normal.y == -1 then
                 local targetY            = self._peakY or (self.y - 40)
                 self.yVelocity           = BounceBlock.getBounceVelocity(self.gravity, targetY, self.y)
                 self.doubleJumpAvailable = false
                 self.dashAvailable       = true
-                self._peakY              = targetY -- цель не сбрасываем
+                self._peakY              = targetY
                 self.touchingGround      = false
                 self:changeState("jump")
                 print("[BounceBlock] targetY=" .. math.floor(targetY) .. " v=" .. string.format("%.2f", self.yVelocity))
@@ -376,6 +365,16 @@ function Player:handleGroundInput()
 end
 
 function Player:handleAirInput()
+    -- Дэш на A в воздухе (только если dashAbility активна и A только что нажата)
+    -- jumpBuffer сбрасывается при прыжке, поэтому A без прыжка = дэш
+    if pd.buttonJustPressed(pd.kButtonA) and self.dashAvailable and self.dashAbility then
+        -- jumpHoldFrames > 0 значит мы только что прыгнули и ещё держим A — не дэшим
+        if self.jumpHoldFrames <= 0 then
+            self:changeToDashState()
+            return
+        end
+    end
+
     if self:playerJumped() and self.doubleJumpAvailable and self.doubleJumpAbility then
         self.doubleJumpAvailable = false
         self:changeToJumpState()
@@ -410,7 +409,7 @@ function Player:changeToJumpState()
     self._peakY = self.y
     self.yVelocity = self.jumpVelocity
     self.jumpBuffer = 0
-    self.jumpHoldFrames = self.jumpHoldMaxFrames -- начинаем отсчёт
+    self.jumpHoldFrames = self.jumpHoldMaxFrames
     self:changeState("jump")
 end
 
