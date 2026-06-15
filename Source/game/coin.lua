@@ -32,6 +32,13 @@ function Coin:init(x, y, entity)
     print("[Coin] spawned x=" .. x .. " y=" .. y)
 end
 
+function Coin:update()
+    if Game.instance and Game.instance.spellbook:isActive() then
+        return  -- анимация монеток замирает
+    end
+    self:updateAnimation()
+end
+
 function Coin:collect()
     if self.collected then return end
     self.collected = true

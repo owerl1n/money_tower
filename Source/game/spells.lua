@@ -6,12 +6,7 @@ SPELLS = {
         onEquip   = function(player) player.projectileAbility = true end,
         onUnequip = function(player)
             player.projectileAbility = false
-            -- уничтожаем летящий снаряд при смене заклинания
-            if player._lastProjectile and not player._lastProjectile.destroyed then
-                player._lastProjectile.destroyed = true
-                player._lastProjectile:remove()
-            end
-            player._lastProjectile = nil
+            -- снаряд НЕ уничтожаем, пусть летит/висит
         end,
     },
     {
@@ -27,7 +22,6 @@ SPELLS = {
         name    = "Anchor",
         onEquip   = function(player) player.anchorAbility = true end,
         onUnequip = function(player)
-            -- НЕ вызываем clearAnchor() — метка остаётся на месте
             player.anchorAbility = false
         end,
     },
@@ -38,12 +32,7 @@ SPELLS = {
         onEquip   = function(player) player.bounceBlockAbility = true end,
         onUnequip = function(player)
             player.bounceBlockAbility = false
-            -- уничтожаем летящий снаряд при смене заклинания
-            if player._lastBounceProjectile and not player._lastBounceProjectile.destroyed then
-                player._lastBounceProjectile.destroyed = true
-                player._lastBounceProjectile:remove()
-            end
-            player._lastBounceProjectile = nil
+            -- снаряд НЕ уничтожаем
         end,
     },
 }

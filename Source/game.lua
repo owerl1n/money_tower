@@ -63,11 +63,15 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
 
-    self.spellbook = SpellBook(self.levelComplete, function(slot)
-        for _, spell in ipairs(SPELLS) do
-            if spell.onUnequip then
-                spell.onUnequip(self.player)
+    self._activeSlot   = 1 -- добавь это поле до SpellBook
+
+    self.spellbook     = SpellBook(self.levelComplete, function(slot)
+        if slot ~= self._activeSlot then
+            local prev = SPELLS[self._activeSlot]
+            if prev and prev.onUnequip then
+                prev.onUnequip(self.player)
             end
+            self._activeSlot = slot
         end
 
         local spell = SPELLS[slot]

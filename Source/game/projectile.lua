@@ -37,6 +37,11 @@ function Projectile:init(x, y, direction)
 end
 
 function Projectile:update()
+    -- Если книга открыта — останавливаем снаряды
+    if Game.instance and Game.instance.spellbook:isActive() then
+        return
+    end
+
     self:updateAnimation()
 
     local newX = self.x + self.direction * SPEED
@@ -45,14 +50,14 @@ function Projectile:update()
     for i = 1, len do
         local col = collisions[i]
         if col.type == gfx.sprite.kCollisionTypeSlide then
-            self.destroyed = true  -- помечаем
+            self.destroyed = true
             self:remove()
             return
         end
     end
 
     if self.x < -TILE_SIZE or self.x > 200 + TILE_SIZE then
-        self.destroyed = true  -- помечаем
+        self.destroyed = true
         self:remove()
     end
 end

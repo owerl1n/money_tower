@@ -33,3 +33,10 @@ function AnimTile:init(x, y, animName)
 
     self:playAnimation()
 end
+
+function AnimTile:update()
+    if Game.instance and Game.instance.spellbook:isActive() then
+        return  -- портал замирает
+    end
+    self:updateAnimation()
+end
