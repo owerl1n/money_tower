@@ -4,7 +4,15 @@ SPELLS = {
         glyph   = 1,
         name    = "Block",
         onEquip   = function(player) player.projectileAbility = true end,
-        onUnequip = function(player) player.projectileAbility = false end,
+        onUnequip = function(player)
+            player.projectileAbility = false
+            -- уничтожаем летящий снаряд при смене заклинания
+            if player._lastProjectile and not player._lastProjectile.destroyed then
+                player._lastProjectile.destroyed = true
+                player._lastProjectile:remove()
+            end
+            player._lastProjectile = nil
+        end,
     },
     {
         id      = "dash",
@@ -19,8 +27,8 @@ SPELLS = {
         name    = "Anchor",
         onEquip   = function(player) player.anchorAbility = true end,
         onUnequip = function(player)
+            -- НЕ вызываем clearAnchor() — метка остаётся на месте
             player.anchorAbility = false
-            player:clearAnchor()
         end,
     },
     {
@@ -28,6 +36,14 @@ SPELLS = {
         glyph     = 3,
         name      = "BounceBlock",
         onEquip   = function(player) player.bounceBlockAbility = true end,
-        onUnequip = function(player) player.bounceBlockAbility = false end,
+        onUnequip = function(player)
+            player.bounceBlockAbility = false
+            -- уничтожаем летящий снаряд при смене заклинания
+            if player._lastBounceProjectile and not player._lastBounceProjectile.destroyed then
+                player._lastBounceProjectile.destroyed = true
+                player._lastBounceProjectile:remove()
+            end
+            player._lastBounceProjectile = nil
+        end,
     },
 }
