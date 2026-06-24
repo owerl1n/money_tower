@@ -252,14 +252,20 @@ function Player:handleAnchorInput()
 
     if self._anchorX then
         local tx, ty = self._anchorX, self._anchorY
+        -- дым на старой позиции (откуда телепортируемся)
+        SmokeEffect(self.x, self.y, "anchor")
         self:clearAnchor()
         self:moveTo(tx, ty)
         self.xVelocity = 0
+        -- дым на новой позиции (куда прилетели)
+        SmokeEffect(tx, ty, "anchor")
         print("[Anchor] teleport to " .. tx .. "," .. ty)
     else
         self._anchorX = self.x
         self._anchorY = self.y
         self._anchorMarker = AnchorMarker(self.x, self.y)
+        -- дым при постановке якоря
+        SmokeEffect(self.x, self.y, "anchor")
         print("[Anchor] placed at " .. self.x .. "," .. self.y)
     end
 end

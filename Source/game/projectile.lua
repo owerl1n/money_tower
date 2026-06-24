@@ -32,12 +32,11 @@ function Projectile:init(x, y, direction)
     self:setCenter(0.5, 0.5)
     self:moveTo(x, y)
     self:setZIndex(Z_INDEXES.Player - 1)
-    self:setCollideRect(2, 2, 10, 10)
+    self:setCollideRect(6, 5, 3, 5)
     self:setTag(TAGS.Projectile)
 end
 
 function Projectile:update()
-    -- Если книга открыта — останавливаем снаряды
     if Game.instance and Game.instance.spellbook:isActive() then
         return
     end
@@ -50,6 +49,7 @@ function Projectile:update()
     for i = 1, len do
         local col = collisions[i]
         if col.type == gfx.sprite.kCollisionTypeSlide then
+            SmokeEffect(self.x, self.y, "projectile")   -- ← добавь
             self.destroyed = true
             self:remove()
             return

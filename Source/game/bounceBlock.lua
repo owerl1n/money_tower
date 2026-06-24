@@ -27,6 +27,8 @@ function BounceBlock:init(x, y)
     self:setTag(TAGS.BounceBlock)
     self:add()
 
+    SmokeEffect(x, y, "block")
+
     print("[BounceBlock] размещён x=" .. x .. " y=" .. y)
 end
 

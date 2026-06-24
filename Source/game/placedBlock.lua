@@ -28,5 +28,7 @@ function PlacedBlock:init(x, y)
     self:setTag(TAGS.Block)
     self:add()
 
+    SmokeEffect(x, y, "block")
+
     print("[PlacedBlock] размещён x=" .. x .. " y=" .. y)
 end

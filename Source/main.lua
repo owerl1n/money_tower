@@ -20,6 +20,7 @@ import "game/projectile"
 import "game/placedBlock"
 import "game/anchorMarker"
 import "game/bounceBlock"
+import "game/smokeEffect"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"
@@ -42,7 +43,7 @@ function pd.update()
     gfx.sprite.update()
     SceneManager.drawOverlay()
     pd.timer.updateTimers()
-    pd.drawFPS(1,1)
+    --pd.drawFPS(1,1)
 end
 
 function pd.cranked(change, acceleratedChange)
