@@ -325,7 +325,7 @@
 			"pivotY": 0,
 			"fieldDefs": [
 				{
-					"identifier": "Size",
+					"identifier": "size",
 					"doc": null,
 					"__type": "LocalEnum.Size",
 					"uid": 78,
@@ -351,7 +351,10 @@
 					"max": null,
 					"regex": null,
 					"acceptFileTypes": null,
-					"defaultOverride": null,
+					"defaultOverride": {
+						"id": "V_String",
+						"params": ["Medium"]
+					},
 					"textLanguageMode": null,
 					"symmetricalRef": false,
 					"autoChainRef": true,
@@ -549,7 +552,7 @@
 							"height": 16,
 							"defUid": 74,
 							"px": [48,96],
-							"fieldInstances": [{ "__identifier": "Size", "__type": "LocalEnum.Size", "__value": "Small", "__tile": null, "defUid": 78, "realEditorValues": [{
+							"fieldInstances": [{ "__identifier": "size", "__type": "LocalEnum.Size", "__value": "Small", "__tile": null, "defUid": 78, "realEditorValues": [{
 								"id": "V_String",
 								"params": ["Small"]
 							}] }],
@@ -568,7 +571,7 @@
 							"height": 16,
 							"defUid": 74,
 							"px": [32,96],
-							"fieldInstances": [{ "__identifier": "Size", "__type": "LocalEnum.Size", "__value": "Medium", "__tile": null, "defUid": 78, "realEditorValues": [{
+							"fieldInstances": [{ "__identifier": "size", "__type": "LocalEnum.Size", "__value": "Medium", "__tile": null, "defUid": 78, "realEditorValues": [{
 								"id": "V_String",
 								"params": ["Medium"]
 							}] }],
@@ -587,7 +590,7 @@
 							"height": 16,
 							"defUid": 74,
 							"px": [16,96],
-							"fieldInstances": [{ "__identifier": "Size", "__type": "LocalEnum.Size", "__value": "Large", "__tile": null, "defUid": 78, "realEditorValues": [{
+							"fieldInstances": [{ "__identifier": "size", "__type": "LocalEnum.Size", "__value": "Large", "__tile": null, "defUid": 78, "realEditorValues": [{
 								"id": "V_String",
 								"params": ["Large"]
 							}] }],
