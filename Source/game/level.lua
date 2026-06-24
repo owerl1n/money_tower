@@ -67,10 +67,13 @@ function Level:goToLevel(levelName)
             AnimTile(entityX, entityY - 2, entity)
         elseif entityName == "Coin" then
             Coin(entityX, entityY, entity)
+        elseif entityName == "Spikes" then
+            Spike(entityX, entityY, entity)
         elseif entityName == "Spawn" then
             self.spawnX = entityX
             self.spawnY = entityY
         end
+        
     end
 
     if not self.spawnX or not self.spawnY then

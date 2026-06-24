@@ -21,6 +21,7 @@ import "game/placedBlock"
 import "game/anchorMarker"
 import "game/bounceBlock"
 import "game/smokeEffect"
+import "game/spike"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

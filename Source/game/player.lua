@@ -5,7 +5,7 @@ import "game/coinPopup"
 
 class('Player').extends(AnimatedSprite)
 
-playerImageTable = gfx.imagetable.new("images/mage-table-16-16")
+playerImageTable = gfx.imagetable.new("images/mage-table-17-17")
 assert(playerImageTable, "playerImageTable not found")
 
 local SHOOT_COOLDOWN = 20
