@@ -106,6 +106,7 @@ function Game:update()
 end
 
 function Game:handleInput()
+    if self.player.dead then return end
     -- Когда книга открыта — ▲/▼ переключают слоты, A/B закрывают
     if self.spellbook:isActive() then
         if pd.buttonJustPressed(pd.kButtonUp) then

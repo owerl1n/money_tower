@@ -17,6 +17,10 @@ function Player:init(x, y, levelComplete)
     self:addState("run", 1, 1)
     self:addState("jump", 1, 1)
     self:addState("dash", 1, 1)
+    self:addState("death", 2, 2, {
+        tickStep = 1,
+        loop     = false,
+    })
     self:playAnimation()
 
     self:moveTo(x, y)
@@ -40,6 +44,11 @@ function Player:init(x, y, levelComplete)
     self.jumpHoldMaxFrames     = 8
     self.jumpHoldFrames        = 0
     self.jumpMinCutoffSpeed    = -1.4
+
+    -- Death
+    self._deathBounceX         = 0
+    self._deathBounceY         = 0
+    self._restartTriggered     = false
 
     -- Abilities
     self.doubleJumpAbility     = false
@@ -99,7 +108,19 @@ function Player:collisionResponse(other)
 end
 
 function Player:update()
-    if self.dead then return end
+    if self.y > 140 or self.y < -20 or self.x < -20 or self.x > 220 then
+        if not self._restartTriggered then
+            self:die()
+            self:_triggerRestart()
+        end
+        return
+    end
+
+    if self.dead then
+        self:updateDeathBounce()
+        return
+    end
+
     if Game.instance and Game.instance.spellbook:isActive() then
         self:updateAnimation()
         return
@@ -300,7 +321,9 @@ function Player:handleMovementAndCollisions()
         end
 
         if collisionTag == TAGS.Hazard then
-            died = true
+            if not self.atPortal then
+                died = true
+            end
         elseif collisionTag == TAGS.Pickup then
             collisionObject:collect()
         elseif collisionTag == TAGS.Portal then
@@ -345,14 +368,30 @@ function Player:onPortalTouch()
 end
 
 function Player:die()
-    self.xVelocity = 0
-    self.yVelocity = 0
+    if self.dead then return end
+
+    self._restartTriggered = false
     self.dead = true
     self.atPortal = false
+
+    -- случайный отскок: X влево или вправо, Y всегда вверх
+    local bounceX = (math.random(0, 1) == 0 and -1 or 1) * (1.5 + math.random() * 2.0)
+    local bounceY = -(2.5 + math.random() * 2.0)
+    self._deathBounceX = bounceX
+    self._deathBounceY = bounceY
+
+    self:changeState("death")   -- ← вместо setImage
+
+    -- отключаем коллизии
     self:setCollisionsEnabled(false)
-    pd.timer.performAfterDelay(200, function()
+
+    pd.timer.performAfterDelay(800, function()
         self:setCollisionsEnabled(true)
         self.dead = false
+        self._deathBounceX = 0
+        self._deathBounceY = 0
+        -- возвращаем анимацию
+        self:playAnimation()
     end)
 end
 
@@ -455,6 +494,23 @@ function Player:applyDrag(amount)
     end
     if math.abs(self.xVelocity) < self.minimumAirSpeed or self.touchingWall then
         self.xVelocity = 0
+    end
+end
+
+function Player:updateDeathBounce()
+    -- гравитация применяется и во время смерти
+    self._deathBounceY += self.gravity
+    self:moveBy(self._deathBounceX, self._deathBounceY)
+    -- горизонтальное затухание
+    self._deathBounceX *= 0.92
+end
+
+function Player:_triggerRestart()
+    if self._restartTriggered then return end
+    self._restartTriggered = true
+
+    if self.levelComplete and self.levelComplete._onRestart then
+        self.levelComplete._onRestart()
     end
 end
 
