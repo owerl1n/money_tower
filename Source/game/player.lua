@@ -324,6 +324,19 @@ function Player:handleMovementAndCollisions()
             if not self.atPortal then
                 died = true
             end
+        elseif collisionTag == TAGS.CrumblingBlock then
+            if collision.normal.y == -1 then
+                self.touchingGround = true -- ← добавь это
+                self.doubleJumpAvailable = true
+                self.dashAvailable = true
+                collisionObject:onPlayerLanded()
+            elseif collision.normal.y == 1 then
+                self.touchingCeiling = true
+                self.jumpHoldFrames = 0
+            end
+            if collision.normal.x ~= 0 then
+                self.touchingWall = true
+            end
         elseif collisionTag == TAGS.Pickup then
             collisionObject:collect()
         elseif collisionTag == TAGS.Portal then
@@ -422,6 +435,7 @@ function Player:handleAirInput()
 
     if self:playerJumped() and self.doubleJumpAvailable and self.doubleJumpAbility then
         self.doubleJumpAvailable = false
+        self.jumpBuffer = 0
         self:changeToJumpState()
     elseif pd.buttonJustPressed(pd.kButtonDown) and self.dashAvailable and self.dashAbility then
         self:changeToDashState()

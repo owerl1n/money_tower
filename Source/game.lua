@@ -18,6 +18,7 @@ TAGS = {
     Block = 6,
     AnchorMark = 7,
     BounceBlock = 8,
+    CrumblingBlock = 9,
 }
 
 Z_INDEXES = {
@@ -63,7 +64,7 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
 
-    self._activeSlot   = 1 -- добавь это поле до SpellBook
+    self._activeSlot   = 2 -- добавь это поле до SpellBook
 
     self.spellbook     = SpellBook(self.levelComplete, function(slot)
         if slot ~= self._activeSlot then
@@ -82,7 +83,7 @@ function Game:init(startLevel, onNextLevel, onRestart)
     end)
 
     -- Применяем заклинание Block по умолчанию (слот 1)
-    local defaultSpell = SPELLS[1]
+    local defaultSpell = SPELLS[2]
     if defaultSpell and defaultSpell.onEquip then
         defaultSpell.onEquip(self.player)
         print("[Spell] default equipped: " .. defaultSpell.name)

@@ -22,6 +22,7 @@ import "game/anchorMarker"
 import "game/bounceBlock"
 import "game/smokeEffect"
 import "game/spike"
+import "game/crumblingBlock"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

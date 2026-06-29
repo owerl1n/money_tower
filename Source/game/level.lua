@@ -69,6 +69,8 @@ function Level:goToLevel(levelName)
             Coin(entityX, entityY, entity)
         elseif entityName == "Spikes" then
             Spike(entityX, entityY, entity)
+        elseif entityName == "CrumblingBlock" then
+            CrumblingBlock(entityX, entityY)
         elseif entityName == "Spawn" then
             self.spawnX = entityX
             self.spawnY = entityY

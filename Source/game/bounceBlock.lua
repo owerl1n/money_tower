@@ -10,12 +10,6 @@ assert(t, "BounceBlock: не удалось загрузить")
 bounceImage = t[3]
 assert(bounceImage, "BounceBlock: тайл not found")
 
-
--- Минимальный и максимальный импульс отскока
-local BOUNCE_MIN    = -4.5   -- слабый отскок (упал с малой высоты)
-local BOUNCE_MAX    = -10.0  -- сильный отскок (упал с большой высоты)
-local HEIGHT_SCALE  = 60     -- пикселей падения для максимального отскока
-
 function BounceBlock:init(x, y)
 
     BounceBlock.super.init(self, bounceImage)
