@@ -45,6 +45,9 @@ function Player:init(x, y, levelComplete)
     self.jumpHoldFrames        = 0
     self.jumpMinCutoffSpeed    = -1.4
 
+    self.coyoteFrames          = 0
+    self.coyoteMaxFrames       = 3
+
     -- Death
     self._deathBounceX         = 0
     self._deathBounceY         = 0
@@ -146,7 +149,7 @@ function Player:updateJumpBuffer()
 end
 
 function Player:playerJumped()
-    return self.jumpBuffer > 0
+    return self.jumpBuffer > 0 and (self.touchingGround or self.coyoteFrames > 0)
 end
 
 function Player:handleState()
@@ -292,6 +295,7 @@ function Player:handleAnchorInput()
 end
 
 function Player:handleMovementAndCollisions()
+    local wasOnGround = self.touchingGround
     local _, _, collisions, length = self:moveWithCollisions(self.x + self.xVelocity, self.y + self.yVelocity)
 
     self.touchingGround = false
@@ -357,6 +361,14 @@ function Player:handleMovementAndCollisions()
         end
     end
 
+    if self.touchingGround then
+        self.coyoteFrames = self.coyoteMaxFrames
+    else
+        if self.coyoteFrames > 0 then
+            self.coyoteFrames -= 1
+        end
+    end
+
     if self.xVelocity < 0 then
         self.globalFlip = 1
     elseif self.xVelocity > 0 then
@@ -411,7 +423,7 @@ end
 function Player:handleGroundInput()
     if self:playerJumped() then
         self:changeToJumpState()
-    elseif pd.buttonJustPressed(pd.kButtonB) and self.dashAvailable and self.dashAbility then
+    elseif pd.buttonJustPressed(pd.kButtonA) and self.dashAvailable and self.dashAbility then
         self:changeToDashState()
     elseif pd.buttonIsPressed(pd.kButtonLeft) then
         self:changeToRunState("left")
@@ -435,10 +447,7 @@ function Player:handleAirInput()
 
     if self:playerJumped() and self.doubleJumpAvailable and self.doubleJumpAbility then
         self.doubleJumpAvailable = false
-        self.jumpBuffer = 0
         self:changeToJumpState()
-    elseif pd.buttonJustPressed(pd.kButtonDown) and self.dashAvailable and self.dashAbility then
-        self:changeToDashState()
     elseif pd.buttonIsPressed(pd.kButtonLeft) then
         self.xVelocity = -self.maxSpeed
     elseif pd.buttonIsPressed(pd.kButtonRight) then
@@ -469,6 +478,7 @@ function Player:changeToJumpState()
     self.yVelocity = self.jumpVelocity
     self.jumpBuffer = 0
     self.jumpHoldFrames = self.jumpHoldMaxFrames
+    self.coyoteFrames = 0
     self:changeState("jump")
 end
 
