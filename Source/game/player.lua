@@ -72,7 +72,7 @@ function Player:init(x, y, levelComplete)
     self.touchingWall          = false
     self.dead                  = false
 
-    self.atPortal              = false
+    self.atExit              = false
 
     self.coinPopup             = CoinPopup(self)
 
@@ -104,7 +104,7 @@ end
 
 function Player:collisionResponse(other)
     local tag = other:getTag()
-    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Portal then
+    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Exit then
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide
@@ -155,14 +155,14 @@ end
 function Player:handleState()
     if self.currentState == "idle" then
         self:applyGravity()
-        if self.atPortal then
+        if self.atExit then
             self.xVelocity = 0
         else
             self:handleGroundInput()
         end
     elseif self.currentState == "run" then
         self:applyGravity()
-        if self.atPortal then
+        if self.atExit then
             self:changeToIdleState()
         else
             self:handleGroundInput()
@@ -188,7 +188,7 @@ function Player:handleState()
             end
         end
 
-        if not self.atPortal then
+        if not self.atExit then
             self:handleAirInput()
         end
     elseif self.currentState == "dash" then
@@ -325,7 +325,7 @@ function Player:handleMovementAndCollisions()
         end
 
         if collisionTag == TAGS.Hazard then
-            if not self.atPortal then
+            if not self.atExit then
                 died = true
             end
         elseif collisionTag == TAGS.CrumblingBlock then
@@ -343,7 +343,7 @@ function Player:handleMovementAndCollisions()
             end
         elseif collisionTag == TAGS.Pickup then
             collisionObject:collect()
-        elseif collisionTag == TAGS.Portal then
+        elseif collisionTag == TAGS.Exit then
             touchedPortal = true
             self._lastPortalX = collisionObject.x + 8
             self._lastPortalY = collisionObject.y
@@ -377,13 +377,13 @@ function Player:handleMovementAndCollisions()
 
     if died then
         self:die()
-    elseif touchedPortal and not self.atPortal then
+    elseif touchedPortal and not self.atExit then
         self:onPortalTouch()
     end
 end
 
 function Player:onPortalTouch()
-    self.atPortal = true
+    self.atExit = true
     self.xVelocity = 0
     if self.levelComplete then
         local px = self._lastPortalX or self.x
@@ -397,7 +397,7 @@ function Player:die()
 
     self._restartTriggered = false
     self.dead = true
-    self.atPortal = false
+    self.atExit = false
 
     -- случайный отскок: X влево или вправо, Y всегда вверх
     local bounceX = (math.random(0, 1) == 0 and -1 or 1) * (1.5 + math.random() * 2.0)
@@ -540,7 +540,7 @@ end
 
 function Player:collisionResponse(other)
     local tag = other:getTag()
-    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Portal
+    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Exit
         or tag == TAGS.Projectile or tag == TAGS.AnchorMark then
         return gfx.sprite.kCollisionTypeOverlap
     end

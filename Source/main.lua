@@ -10,7 +10,7 @@ import "libs/LDtk"
 
 import "game/level"
 import "game/player"
-import "game/animTile"
+import "game/exit"
 import "game/coin"
 import "game/coinManager"
 import "game/coinPopup"
