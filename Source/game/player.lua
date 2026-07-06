@@ -302,7 +302,7 @@ function Player:handleMovementAndCollisions()
     self.touchingCeiling = false
     self.touchingWall = false
     local died = false
-    local touchedPortal = false
+    local touchedExit = false
 
     for i = 1, length do
         local collision = collisions[i]
@@ -344,9 +344,9 @@ function Player:handleMovementAndCollisions()
         elseif collisionTag == TAGS.Pickup then
             collisionObject:collect()
         elseif collisionTag == TAGS.Exit then
-            touchedPortal = true
-            self._lastPortalX = collisionObject.x + 8
-            self._lastPortalY = collisionObject.y
+            touchedExit = true
+            self._lastExitX = collisionObject.x + 8
+            self._lastExitY = collisionObject.y
         elseif collisionTag == TAGS.BounceBlock then
             if collision.normal.y == -1 then
                 local targetY            = self._peakY or (self.y - 40)
@@ -377,17 +377,17 @@ function Player:handleMovementAndCollisions()
 
     if died then
         self:die()
-    elseif touchedPortal and not self.atExit then
-        self:onPortalTouch()
+    elseif touchedExit and not self.atExit then
+        self:onExitTouch()
     end
 end
 
-function Player:onPortalTouch()
+function Player:onExitTouch()
     self.atExit = true
     self.xVelocity = 0
     if self.levelComplete then
-        local px = self._lastPortalX or self.x
-        local py = self._lastPortalY or self.y
+        local px = self._lastExitX or self.x
+        local py = self._lastExitY or self.y
         self.levelComplete:trigger()
     end
 end
