@@ -29,6 +29,8 @@ function Projectile:init(x, y, direction)
     self.direction = direction  -- -1 влево, 1 вправо
     self.globalFlip = direction == -1 and 1 or 0
 
+    self._portalCooldown = 0   -- ← добавить
+
     self:setCenter(0.5, 0.5)
     self:moveTo(x, y)
     self:setZIndex(Z_INDEXES.Player - 1)
@@ -41,6 +43,10 @@ function Projectile:update()
         return
     end
 
+    if self._portalCooldown > 0 then      -- ← добавить
+        self._portalCooldown -= 1
+    end
+
     self:updateAnimation()
 
     local newX = self.x + self.direction * SPEED
@@ -48,8 +54,15 @@ function Projectile:update()
 
     for i = 1, len do
         local col = collisions[i]
+        local tag = col.other:getTag()
+
+        if tag == TAGS.Portal then                 -- ← добавить
+            col.other:teleport(self)
+            return
+        end
+
         if col.type == gfx.sprite.kCollisionTypeSlide then
-            SmokeEffect(self.x, self.y, "projectile")   -- ← добавь
+            SmokeEffect(self.x, self.y, "projectile")
             self.destroyed = true
             self:remove()
             return
@@ -64,7 +77,8 @@ end
 
 function Projectile:collisionResponse(other)
     local tag = other:getTag()
-    if tag == TAGS.Player or tag == TAGS.Exit or tag == TAGS.AnchorMark then
+    if tag == TAGS.Player or tag == TAGS.Exit or tag == TAGS.AnchorMark
+        or tag == TAGS.Portal then       -- ← добавить
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide

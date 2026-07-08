@@ -23,6 +23,7 @@ import "game/bounceBlock"
 import "game/smokeEffect"
 import "game/spike"
 import "game/crumblingBlock"
+import "game/portal"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

@@ -3,6 +3,7 @@ local gfx <const> = playdate.graphics
 
 import "game/coinPopup"
 
+
 class('Player').extends(AnimatedSprite)
 
 playerImageTable = gfx.imagetable.new("images/mage-table-17-17")
@@ -72,7 +73,9 @@ function Player:init(x, y, levelComplete)
     self.touchingWall          = false
     self.dead                  = false
 
-    self.atExit              = false
+    self.atExit                = false
+
+    self._portalCooldown       = 0
 
     self.coinPopup             = CoinPopup(self)
 
@@ -124,9 +127,14 @@ function Player:update()
         return
     end
 
+    
     if Game.instance and Game.instance.spellbook:isActive() then
         self:updateAnimation()
         return
+    end
+
+    if self._portalCooldown and self._portalCooldown > 0 then
+        self._portalCooldown -= 1
     end
 
     self:updateAnimation()
@@ -208,20 +216,18 @@ function Player:handleAbilityInput()
 
     if self.projectileAbility and pd.buttonJustPressed(pd.kButtonDown) then
         if self._lastProjectile and self._lastProjectile.x then
-            local overAnchor = self._anchorMarker and
-                math.abs(self._lastProjectile.x - self._anchorMarker.x) < 10 and
-                math.abs(self._lastProjectile.y - self._anchorMarker.y) < 10
+            local tileX = math.floor(self._lastProjectile.x / 16) * 16 + 8
+            local tileY = math.floor(self._lastProjectile.y / 16) * 16 + 8
 
-            if not overAnchor then
-                PlacedBlock(
-                    math.floor(self._lastProjectile.x / 16) * 16 + 8,
-                    math.floor(self._lastProjectile.y / 16) * 16 + 8
-                )
+            local occupied = isAreaBlocked(tileX - 8, tileY - 8, 16, 16)
+
+            if not occupied then
+                PlacedBlock(tileX, tileY)
                 self._lastProjectile:remove()
                 self._lastProjectile = nil
                 print("[Player] блок размещён")
             else
-                print("[Player] блок заблокирован — снаряд над меткой якоря")
+                print("[Player] клетка занята — блок не поставлен")
             end
         elseif self._shootCooldown <= 0 then
             local dir            = (self.globalFlip == 1) and -1 or 1
@@ -242,12 +248,18 @@ function Player:handleAbilityInput()
 
     if self.bounceBlockAbility and pd.buttonJustPressed(pd.kButtonDown) then
         if self._lastBounceProjectile and self._lastBounceProjectile.x then
-            BounceBlock(
-                math.floor(self._lastBounceProjectile.x / 16) * 16 + 8,
-                math.floor(self._lastBounceProjectile.y / 16) * 16 + 8
-            )
-            self._lastBounceProjectile:remove()
-            self._lastBounceProjectile = nil
+            local tileX = math.floor(self._lastBounceProjectile.x / 16) * 16 + 8
+            local tileY = math.floor(self._lastBounceProjectile.y / 16) * 16 + 8
+
+            local occupied = isAreaBlocked(tileX - 8, tileY - 8, 16, 16)
+
+            if not occupied then
+                BounceBlock(tileX, tileY)
+                self._lastBounceProjectile:remove()
+                self._lastBounceProjectile = nil
+            else
+                print("[Player] клетка занята — BounceBlock не поставлен")
+            end
         elseif self._bounceShootCooldown <= 0 then
             local dir                  = (self.globalFlip == 1) and -1 or 1
             local p                    = Projectile(self.x + dir * 10, self.y, dir)
@@ -276,19 +288,25 @@ function Player:handleAnchorInput()
 
     if self._anchorX then
         local tx, ty = self._anchorX, self._anchorY
-        -- дым на старой позиции (откуда телепортируемся)
+
+        -- проверяем площадь коллайдера игрока (10x13, с центром чуть смещён)
+        local blocked = isAreaBlocked(tx - 5, ty - 6.5, 10, 13, self._anchorMarker)
+
+        if blocked then
+            print("[Anchor] телепорт заблокирован — место занято")
+            return
+        end
+
         SmokeEffect(self.x, self.y, "anchor")
         self:clearAnchor()
         self:moveTo(tx, ty)
         self.xVelocity = 0
-        -- дым на новой позиции (куда прилетели)
         SmokeEffect(tx, ty, "anchor")
         print("[Anchor] teleport to " .. tx .. "," .. ty)
     else
         self._anchorX = self.x
         self._anchorY = self.y
         self._anchorMarker = AnchorMarker(self.x, self.y)
-        -- дым при постановке якоря
         SmokeEffect(self.x, self.y, "anchor")
         print("[Anchor] placed at " .. self.x .. "," .. self.y)
     end
@@ -343,6 +361,8 @@ function Player:handleMovementAndCollisions()
             end
         elseif collisionTag == TAGS.Pickup then
             collisionObject:collect()
+        elseif collisionTag == TAGS.Portal then
+            collisionObject:teleport(self)
         elseif collisionTag == TAGS.Exit then
             touchedExit = true
             self._lastExitX = collisionObject.x + 8
@@ -541,7 +561,7 @@ end
 function Player:collisionResponse(other)
     local tag = other:getTag()
     if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Exit
-        or tag == TAGS.Projectile or tag == TAGS.AnchorMark then
+        or tag == TAGS.Projectile or tag == TAGS.AnchorMark or tag == TAGS.Portal then
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide

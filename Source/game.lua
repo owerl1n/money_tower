@@ -19,6 +19,7 @@ TAGS = {
     AnchorMark = 7,
     BounceBlock = 8,
     CrumblingBlock = 9,
+    Portal = 10,
 }
 
 Z_INDEXES = {
@@ -26,6 +27,28 @@ Z_INDEXES = {
     Pickup = 50,
     Player = 100
 }
+
+-- TODO изменить потом коллайдеры якоря под размеры финального варианта
+-- Возвращает true, если в прямоугольнике (x,y,w,h) есть что-то "твёрдое":
+-- блоки, шипы, стены тайлмапа, порталы, метка якоря
+function isAreaBlocked(x, y, w, h, ignoreSprite)
+    local sprites = gfx.sprite.querySpritesInRect(x, y, w, h)
+    for _, sprite in ipairs(sprites) do
+        if sprite ~= ignoreSprite then
+            if sprite.type == "Solid" then
+                return true -- стены тайлмапа (addWallSprites)
+            end
+            local tag = sprite.getTag and sprite:getTag()
+            if tag == TAGS.Block or tag == TAGS.BounceBlock
+                or tag == TAGS.Hazard or tag == TAGS.CrumblingBlock
+                or tag == TAGS.AnchorMark then
+                return true
+            end
+        end
+    end
+    return false
+end
+
 
 function Game:init(startLevel, onNextLevel, onRestart)
     startLevel = startLevel or 0
@@ -64,7 +87,7 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.player = Player(self.level.spawnX, self.level.spawnY, self.levelComplete)
 
-    self._activeSlot   = 2 -- добавь это поле до SpellBook
+    self._activeSlot   = 1 -- edit default spell
 
     self.spellbook     = SpellBook(self.levelComplete, function(slot)
         if slot ~= self._activeSlot then
@@ -82,8 +105,8 @@ function Game:init(startLevel, onNextLevel, onRestart)
         end
     end)
 
-    -- Применяем заклинание Block по умолчанию (слот 1)
-    local defaultSpell = SPELLS[2]
+    -- here also edit default spell
+    local defaultSpell = SPELLS[1]
     if defaultSpell and defaultSpell.onEquip then
         defaultSpell.onEquip(self.player)
         print("[Spell] default equipped: " .. defaultSpell.name)
@@ -131,3 +154,4 @@ end
 function Game:handleCrank(change, acceleratedChange)
     -- кранк больше не используется для книги
 end
+

@@ -182,47 +182,10 @@
 			"pivotY": 0,
 			"fieldDefs": [
 				{
-					"identifier": "id",
+					"identifier": "PairId",
 					"doc": null,
 					"__type": "String",
 					"uid": 80,
-					"type": "F_String",
-					"isArray": false,
-					"canBeNull": true,
-					"arrayMinLength": null,
-					"arrayMaxLength": null,
-					"editorDisplayMode": "Hidden",
-					"editorDisplayScale": 1,
-					"editorDisplayPos": "Above",
-					"editorLinkStyle": "StraightArrow",
-					"editorDisplayColor": null,
-					"editorAlwaysShow": false,
-					"editorShowInWorld": true,
-					"editorCutLongValues": true,
-					"editorTextSuffix": null,
-					"editorTextPrefix": null,
-					"useForSmartColor": false,
-					"exportToToc": false,
-					"searchable": false,
-					"min": null,
-					"max": null,
-					"regex": null,
-					"acceptFileTypes": null,
-					"defaultOverride": null,
-					"textLanguageMode": null,
-					"symmetricalRef": false,
-					"autoChainRef": true,
-					"allowOutOfLevelRef": true,
-					"allowedRefs": "OnlySame",
-					"allowedRefsEntityUid": null,
-					"allowedRefTags": [],
-					"tilesetUid": null
-				},
-				{
-					"identifier": "target",
-					"doc": null,
-					"__type": "String",
-					"uid": 81,
 					"type": "F_String",
 					"isArray": false,
 					"canBeNull": true,
@@ -722,22 +685,22 @@
 						},
 						{
 							"__identifier": "Portal",
-							"__grid": [8,1],
+							"__grid": [10,2],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#0099DB",
-							"iid": "9e68dc10-6fc0-11f1-ba68-41c1ad1e96b0",
+							"iid": "d8f704b0-6fc0-11f1-9c86-1dd0fd9e68fa",
 							"width": 16,
 							"height": 16,
 							"defUid": 64,
-							"px": [128,16],
-							"fieldInstances": [
-								{ "__identifier": "id", "__type": "String", "__value": null, "__tile": null, "defUid": 80, "realEditorValues": [] },
-								{ "__identifier": "target", "__type": "String", "__value": null, "__tile": null, "defUid": 81, "realEditorValues": [] }
-							],
-							"__worldX": 128,
-							"__worldY": 16
+							"px": [160,32],
+							"fieldInstances": [{ "__identifier": "PairId", "__type": "String", "__value": "1", "__tile": null, "defUid": 80, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["1"]
+							}] }],
+							"__worldX": 160,
+							"__worldY": 32
 						},
 						{
 							"__identifier": "Portal",
@@ -746,15 +709,15 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#0099DB",
-							"iid": "a0d54830-6fc0-11f1-ba68-b3b335695602",
+							"iid": "2609cbb0-6fc0-11f1-9c86-ad9ac94ca084",
 							"width": 16,
 							"height": 16,
 							"defUid": 64,
 							"px": [160,96],
-							"fieldInstances": [
-								{ "__identifier": "id", "__type": "String", "__value": null, "__tile": null, "defUid": 80, "realEditorValues": [] },
-								{ "__identifier": "target", "__type": "String", "__value": null, "__tile": null, "defUid": 81, "realEditorValues": [] }
-							],
+							"fieldInstances": [{ "__identifier": "PairId", "__type": "String", "__value": "1", "__tile": null, "defUid": 80, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["1"]
+							}] }],
 							"__worldX": 160,
 							"__worldY": 96
 						}

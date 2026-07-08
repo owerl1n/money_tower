@@ -30,6 +30,7 @@ function Level:goToLevel(levelName)
     self.levelName = levelName
 
     gfx.sprite.removeAll()
+    Portal.resetRegistry()
 
     for layerName, layer in pairs(ldtk.get_layers(levelName)) do
         if layer.tiles then
@@ -61,8 +62,10 @@ function Level:goToLevel(levelName)
             Ability(entityX, entityY, entity)
         elseif entityName == "Exit" then
             Exit(entityX, entityY, entity)
+        elseif entityName == "Portal" then
+            Portal(entityX + 8, entityY + 8, entity)
         elseif entityName == "Coin" then
-            Coin(entityX, entityY, entity)
+            Coin(entityX + 8, entityY + 8, entity)
         elseif entityName == "Spikes" then
             Spike(entityX, entityY, entity)
         elseif entityName == "CrumblingBlock" then
