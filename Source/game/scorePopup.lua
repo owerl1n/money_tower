@@ -1,28 +1,28 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
--- game/coinPopup.lua
+-- game/ScorePopup.lua
 -- Рисуется напрямую в GameScene:draw(), не спрайт.
 -- Поэтому гарантированно поверх всех тайлов и спрайтов.
 
-class('CoinPopup').extends()
+class('ScorePopup').extends()
 
 local DISPLAY_FRAMES = 60   -- 1 секунда при 60 fps
 local OFFSET_Y       = 18   -- пикселей выше центра игрока
 
-function CoinPopup:init(player)
+function ScorePopup:init(player)
     self._player = player
     self._timer  = 0
     self._amount = 0
 end
 
-function CoinPopup:addCoins(amount)
+function ScorePopup:addScore(amount)
     self._amount += amount
     self._timer   = DISPLAY_FRAMES
 end
 
 -- Вызывать каждый кадр из Game:update()
-function CoinPopup:update()
+function ScorePopup:update()
     if self._timer > 0 then
         self._timer -= 1
         if self._timer == 0 then
@@ -32,7 +32,7 @@ function CoinPopup:update()
 end
 
 -- Вызывать из GameScene:draw() — рисует поверх всего
-function CoinPopup:draw()
+function ScorePopup:draw()
     if self._timer <= 0 then return end
 
     -- Мигание в последние 20 кадров

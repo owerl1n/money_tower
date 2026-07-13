@@ -14,7 +14,7 @@ function Exit:init(x, y, entity)
     self:setCenter(0, 0)
     self:moveTo(x, y)
     self:setZIndex(50)
-    self:setCollideRect(0, 0, 16, 16)
+    self:setCollideRect(1, 1, 14, 14)
     self:setTag(TAGS.Exit)
     self:add()
 end

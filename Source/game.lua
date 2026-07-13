@@ -25,6 +25,7 @@ TAGS = {
 Z_INDEXES = {
     Hazard = 20,
     Pickup = 50,
+    PlacedBlock = 60,
     Player = 100
 }
 
@@ -70,13 +71,13 @@ function Game:init(startLevel, onNextLevel, onRestart)
     self.levelComplete = LevelComplete(
         startLevel,
         function()  -- onNext
-            CoinManager.reset()
+            TreasureManager.reset()
             if onNextLevel then
                 onNextLevel(nextLevel)
             end
         end,
         function()  -- onRestart
-            CoinManager.reset()
+            TreasureManager.reset()
             if onRestart then
                 onRestart(startLevel)
             end
@@ -114,7 +115,7 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.hud = {
         draw = function()
-            self.player.coinPopup:draw()
+            self.player.scorePopup:draw()
             self.levelComplete:draw()
         end
     }
@@ -124,7 +125,7 @@ function Game:update()
     self.spellbook:update()
 
     if not self.spellbook:isActive() then
-        self.player.coinPopup:update()
+        self.player.scorePopup:update()
         self.levelComplete:update()
     end
 end

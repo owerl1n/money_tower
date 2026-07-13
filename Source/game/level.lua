@@ -64,8 +64,12 @@ function Level:goToLevel(levelName)
             Exit(entityX, entityY, entity)
         elseif entityName == "Portal" then
             Portal(entityX + 8, entityY + 8, entity)
-        elseif entityName == "Coin" then
-            Coin(entityX + 8, entityY + 8, entity)
+        elseif entityName == "Treasure" then
+            local kind = "coin"
+            if entity.fields and entity.fields.Kind then
+                kind = string.lower(entity.fields.Kind)
+            end
+            Treasure(entityX + 8, entityY + 8, kind, entity)
         elseif entityName == "Spikes" then
             Spike(entityX, entityY, entity)
         elseif entityName == "CrumblingBlock" then

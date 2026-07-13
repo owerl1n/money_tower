@@ -69,7 +69,7 @@ function LevelComplete:draw()
     gfx.setImageDrawMode(gfx.kDrawModeFillBlack)
 
     for i = 1, 2 do
-        local collected = CoinManager.score
+        local collected = TreasureManager.score
         local threshold = THRESHOLDS[i]
         local text = collected >= threshold and tostring(threshold) or tostring(collected)
         local tw, th = gfx.getTextSize(text)

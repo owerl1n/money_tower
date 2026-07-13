@@ -16,7 +16,7 @@ function BounceBlock:init(x, y)
 
     self:setCenter(0.5, 0.5)
     self:moveTo(x, y)
-    self:setZIndex(Z_INDEXES.Hazard - 1)
+    self:setZIndex(Z_INDEXES.PlacedBlock)
     self:setCollideRect(0, 0, 16, 16)
     self:setTag(TAGS.BounceBlock)
     self:add()

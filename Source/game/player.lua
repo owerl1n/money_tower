@@ -1,7 +1,7 @@
 local pd <const> = playdate
 local gfx <const> = playdate.graphics
 
-import "game/coinPopup"
+import "game/scorePopup"
 
 
 class('Player').extends(AnimatedSprite)
@@ -77,7 +77,7 @@ function Player:init(x, y, levelComplete)
 
     self._portalCooldown       = 0
 
-    self.coinPopup             = CoinPopup(self)
+    self.scorePopup             = ScorePopup(self)
 
     -- Spell: projectile
     self.projectileAbility     = false
@@ -101,8 +101,8 @@ function Player:init(x, y, levelComplete)
     self.levelComplete         = levelComplete
 end
 
-function Player:showCoinPopup(amount)
-    self.coinPopup:addCoins(amount)
+function Player:showScorePopup(amount)
+    self.scorePopup:addScore(amount)
 end
 
 function Player:collisionResponse(other)
