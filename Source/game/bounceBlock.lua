@@ -1,13 +1,11 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
+import "game/assets"
+
 class('BounceBlock').extends(gfx.sprite)
 
-local bounceImage = nil
-
-t = gfx.imagetable.new("images/glyphs-table-16-16")
-assert(t, "BounceBlock: не удалось загрузить")
-bounceImage = t[3]
+local bounceImage = Glyphs[3]
 assert(bounceImage, "BounceBlock: тайл not found")
 
 function BounceBlock:init(x, y)

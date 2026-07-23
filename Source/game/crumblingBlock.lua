@@ -1,19 +1,16 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
+import "game/assets"
 import "libs/AnimatedSprite"
 
--- game/crumblingBlock.lua
 
 class('CrumblingBlock').extends(AnimatedSprite)
-
-local tileset = gfx.imagetable.new("level/tileset-table-16-16")
-assert(tileset, "CrumblingBlock: не удалось загрузить tileset-table-16-16")
 
 local RESPAWN_DELAY = 0  -- кадров до воскрешения (0 = никогда)
 
 function CrumblingBlock:init(x, y)
-    CrumblingBlock.super.init(self, tileset)
+    CrumblingBlock.super.init(self, Tileset)
 
     self:addState("solid", 53, 53, { loop = true })
 

@@ -1,24 +1,19 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
+import "game/assets"
+
 class('PlacedBlock').extends(gfx.sprite)
 
 local blockImage = nil
 
 
-tileset = gfx.imagetable.new("level/tileset-table-16-16")
-assert(tileset, "PlacedBlock: не удалось загрузить tileset-table-16-16")
+blockImage = Tileset[861]
+assert(blockImage, "PlacedBlock: тайл 861 не найден")
 
-local function loadImage()
-    if blockImage then return end
-
-    -- тайл 861 — один из Solid (индекс в imagetable, 1-based)
-    blockImage = tileset[861]
-    assert(blockImage, "PlacedBlock: тайл 861 не найден")
-end
 
 function PlacedBlock:init(x, y)
-    loadImage()
+
     PlacedBlock.super.init(self, blockImage)
 
     self:setCenter(0.5, 0.5)

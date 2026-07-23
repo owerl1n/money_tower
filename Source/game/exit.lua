@@ -1,11 +1,11 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
+import "game/assets"
+
 class('Exit').extends(gfx.sprite)
 
-local exitTileset = gfx.imagetable.new("level/tileset-table-16-16")
-assert(exitTileset, "exit: не удалось загрузить tileset")
-local img = exitTileset[153]
+local img = Tileset[153]
 
 
 function Exit:init(x, y, entity)

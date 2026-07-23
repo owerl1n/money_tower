@@ -74,6 +74,10 @@ function Level:goToLevel(levelName)
             Spike(entityX, entityY, entity)
         elseif entityName == "CrumblingBlock" then
             CrumblingBlock(entityX, entityY)
+        elseif entityName == "Key" then
+            Key(entityX + 8, entityY + 8, entity)
+        elseif entityName == "KeyBlock" then
+            KeyBlock(entityX, entityY) 
         elseif entityName == "Spawn" then
             self.spawnX = entityX
             self.spawnY = entityY

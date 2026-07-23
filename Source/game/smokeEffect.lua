@@ -47,6 +47,15 @@ function SmokeEffect:init(x, y, kind)
                 sprite:remove()
             end,
         })
+    elseif kind =="lockBlock" then
+        firstName = "lockBlock"
+        self:addState(firstName, 25, 31, {
+            tickStep = 1,
+            loop     = false,
+            onAnimationEndEvent = function(sprite)
+                sprite:remove()
+            end,
+        })
     end
 
     self:setCenter(0.5, 0.5)

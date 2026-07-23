@@ -1,11 +1,10 @@
 local pd <const> = playdate
 local gfx <const> = pd.graphics
 
+import "game/assets"
+
 class('Spike').extends(gfx.sprite)
 
--- тот же tileset что в placedBlock.lua
-local tileset = gfx.imagetable.new("level/tileset-table-16-16")
-assert(tileset, "Spike: не удалось загрузить tileset")
 
 local CONFIGS = {
     Small  = { frame = 444, collider = { x=2, y=10, w=12, h=6  } },
@@ -19,7 +18,7 @@ function Spike:init(x, y, entity)
     local size = entity.fields.size
     local config = CONFIGS[size]
 
-    self:setImage(tileset[config.frame])
+    self:setImage(Tileset[config.frame])
     self:setCenter(0, 0)
     self:moveTo(x, y)
     self:setZIndex(Z_INDEXES.Hazard)

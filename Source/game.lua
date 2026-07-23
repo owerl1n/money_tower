@@ -20,6 +20,7 @@ TAGS = {
     BounceBlock = 8,
     CrumblingBlock = 9,
     Portal = 10,
+    KeyBlock = 11,
 }
 
 Z_INDEXES = {
@@ -37,12 +38,12 @@ function isAreaBlocked(x, y, w, h, ignoreSprite)
     for _, sprite in ipairs(sprites) do
         if sprite ~= ignoreSprite then
             if sprite.type == "Solid" then
-                return true -- стены тайлмапа (addWallSprites)
+                return true
             end
             local tag = sprite.getTag and sprite:getTag()
             if tag == TAGS.Block or tag == TAGS.BounceBlock
                 or tag == TAGS.Hazard or tag == TAGS.CrumblingBlock
-                or tag == TAGS.AnchorMark then
+                or tag == TAGS.AnchorMark or tag == TAGS.KeyBlock then
                 return true
             end
         end

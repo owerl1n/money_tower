@@ -4,6 +4,7 @@ local ease <const> = pd.easingFunctions
 
 import "libs/AnimatedSprite"
 import "game/spells"
+import "game/assets"
 
 class('SpellBook').extends(AnimatedSprite)
 
@@ -57,8 +58,7 @@ function SpellBook:init(levelComplete, onSpellSelected)
     self._bookState  = "closed"
     self._slideTimer = nil
 
-    self._glyphs = gfx.imagetable.new("images/glyphs-table-16-16")
-    assert(self._glyphs, "SpellBook: не удалось загрузить images/glyphs-table-16-16")
+    self._glyphs = Glyphs
 
     self._selectedSlot    = 1
 
