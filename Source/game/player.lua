@@ -98,6 +98,8 @@ function Player:init(x, y, levelComplete)
     self._lastBounceProjectile = nil
     self._bounceShootCooldown  = 0
 
+    self._blockIndicator       = nil
+
     self.levelComplete         = levelComplete
 end
 
@@ -123,11 +125,11 @@ function Player:update()
     end
 
     if self.dead then
+        self:_clearBlockIndicator()   -- ← добавить
         self:updateDeathBounce()
         return
     end
 
-    
     if Game.instance and Game.instance.spellbook:isActive() then
         self:updateAnimation()
         return
@@ -141,6 +143,7 @@ function Player:update()
 
     if not (Game.instance and Game.instance.spellbook:isActive()) then
         self:handleAbilityInput()
+        self:_updateBlockIndicator()   -- ← добавить
     end
 
     self:updateJumpBuffer()
@@ -225,6 +228,7 @@ function Player:handleAbilityInput()
                 PlacedBlock(tileX, tileY)
                 self._lastProjectile:remove()
                 self._lastProjectile = nil
+                self:_clearBlockIndicator()
                 print("[Player] блок размещён")
             else
                 print("[Player] клетка занята — блок не поставлен")
@@ -257,6 +261,7 @@ function Player:handleAbilityInput()
                 BounceBlock(tileX, tileY)
                 self._lastBounceProjectile:remove()
                 self._lastBounceProjectile = nil
+                self:_clearBlockIndicator()
             else
                 print("[Player] клетка занята — BounceBlock не поставлен")
             end
@@ -555,6 +560,33 @@ function Player:_triggerRestart()
 
     if self.levelComplete and self.levelComplete._onRestart then
         self.levelComplete._onRestart()
+    end
+end
+
+function Player:_updateBlockIndicator()
+    local projectile = self._lastProjectile or self._lastBounceProjectile
+
+    if projectile and projectile.x then
+        local tileX = math.floor(projectile.x / 16) * 16 + 8
+        local tileY = math.floor(projectile.y / 16) * 16 + 8
+
+        if not self._blockIndicator then
+            self._blockIndicator = BlockIndicator(tileX, tileY)
+        else
+            self._blockIndicator:moveTo(tileX, tileY)
+        end
+
+        local occupied = isAreaBlocked(tileX - 8, tileY - 8, 16, 16)
+        self._blockIndicator:setBlocked(occupied)
+    else
+        self:_clearBlockIndicator()
+    end
+end
+
+function Player:_clearBlockIndicator()
+    if self._blockIndicator then
+        self._blockIndicator:remove()
+        self._blockIndicator = nil
     end
 end
 

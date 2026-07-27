@@ -1,0 +1,17 @@
+# Собранные .pdx (генерируются компилятором Playdate)
+*.pdx/
+
+# Картинки исключены из репозитория
+Source/images/
+
+# LDtk экспортированные lua-уровни (генерируются автоматически)
+Source/level/LDtk_lua_levels/
+
+# Системные/редакторские файлы
+.DS_Store
+Thumbs.db
+*.swp
+*.log
+
+# VSCode / Lua Language Server
+.vscode/

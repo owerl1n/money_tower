@@ -27,6 +27,7 @@ import "game/crumblingBlock"
 import "game/portal"
 import "game/key"
 import "game/keyBlock"
+import "game/blockIndicator"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"
