@@ -94,6 +94,7 @@ function Treasure:update()
     self:updateAnimation()
 end
 
+-- Подбор игроком: начисляет очки и показывает всплывающий текст
 function Treasure:collect()
     if self.collected then return end
     self.collected = true
@@ -103,6 +104,17 @@ function Treasure:collect()
     if Game.instance and Game.instance.player then
         Game.instance.player:showScorePopup(self._value)
     end
+
+    self:remove()
+end
+
+-- Тихое уничтожение без начисления очков и без попапа.
+-- Используется, например, летающим врагом, который "съедает" монетки на своём пути.
+function Treasure:destroy()
+    if self.collected then return end
+    self.collected = true
+
+    print("[Treasure] уничтожено без начисления очков x=" .. self.x .. " y=" .. self.y)
 
     self:remove()
 end

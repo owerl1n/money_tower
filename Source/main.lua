@@ -28,6 +28,8 @@ import "game/portal"
 import "game/key"
 import "game/keyBlock"
 import "game/blockIndicator"
+import "game/flyingEnemy"
+import "game/debtCollector"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

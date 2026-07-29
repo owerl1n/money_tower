@@ -5,7 +5,7 @@
 Source/images/
 
 # LDtk экспортированные lua-уровни (генерируются автоматически)
-Source/level/LDtk_lua_levels/
+#Source/level/LDtk_lua_levels/
 
 # Системные/редакторские файлы
 .DS_Store

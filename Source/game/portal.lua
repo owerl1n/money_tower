@@ -29,7 +29,7 @@ function Portal:init(x, y, entity)
 
     self:setCenter(0.5, 0.5)
     self:moveTo(x, y)
-    self:setZIndex(Z_INDEXES.Pickup)
+    self:setZIndex(Z_INDEXES.Hazard)
     self:setCollideRect(5, 2, 7, 14)
     self:setTag(TAGS.Portal)
     self:add()

@@ -295,7 +295,7 @@ function Player:handleAnchorInput()
         local tx, ty = self._anchorX, self._anchorY
 
         -- проверяем площадь коллайдера игрока (10x13, с центром чуть смещён)
-        local blocked = isAreaBlocked(tx - 5, ty - 6.5, 10, 13, self._anchorMarker)
+        local blocked = isAreaBlocked(tx - 5, ty - 6.5, 3, 13, self._anchorMarker)
 
         if blocked then
             print("[Anchor] телепорт заблокирован — место занято")

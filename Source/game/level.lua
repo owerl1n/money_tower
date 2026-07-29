@@ -77,7 +77,11 @@ function Level:goToLevel(levelName)
         elseif entityName == "Key" then
             Key(entityX + 8, entityY + 8, entity)
         elseif entityName == "KeyBlock" then
-            KeyBlock(entityX, entityY) 
+            KeyBlock(entityX, entityY)
+        elseif entityName == "FlyingEnemy" then
+            FlyingEnemy(entityX + 8, entityY + 8, entity)
+        elseif entityName == "DebtCollector" then
+            DebtCollector(entityX + 8, entityY + 8, entity)
         elseif entityName == "Spawn" then
             self.spawnX = entityX
             self.spawnY = entityY

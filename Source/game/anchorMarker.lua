@@ -9,7 +9,7 @@ function AnchorMarker:init(x, y)
     self:setCenter(0.5, 0.5)
     self:moveTo(x, y)
     self:setZIndex(Z_INDEXES.Player - 2)
-    self:setCollideRect(0, 0, 16, 16)
+    self:setCollideRect(2, 2, 10, 10)
     self:setTag(TAGS.AnchorMark)
     self:add()
 end
