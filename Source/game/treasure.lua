@@ -82,8 +82,8 @@ function Treasure:getKind()
 end
 
 function Treasure:update()
-    if Game.instance and Game.instance.spellbook:isActive() then
-        return -- парение и анимация замирают, пока открыта книга
+    if isGamePaused() then
+        return -- парение и анимация замирают, пока открыта книга или идёт диалог
     end
 
     -- Парение вверх-вниз через синус — плавно, без доп. кадров анимации

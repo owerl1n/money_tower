@@ -63,7 +63,7 @@ function Portal.resetRegistry()
 end
 
 function Portal:update()
-    if Game.instance and Game.instance.spellbook:isActive() then
+    if isGamePaused() then
         return
     end
     self:updateAnimation()

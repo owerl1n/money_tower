@@ -31,6 +31,7 @@ function Level:goToLevel(levelName)
 
     gfx.sprite.removeAll()
     Portal.resetRegistry()
+    KeyBlock.resetRegistry()
 
     for layerName, layer in pairs(ldtk.get_layers(levelName)) do
         if layer.tiles then
@@ -82,6 +83,8 @@ function Level:goToLevel(levelName)
             FlyingEnemy(entityX + 8, entityY + 8, entity)
         elseif entityName == "DebtCollector" then
             DebtCollector(entityX + 8, entityY + 8, entity)
+        elseif entityName == "NPC" then
+            NPC(entityX + 8, entityY + 16, entity)
         elseif entityName == "Spawn" then
             self.spawnX = entityX
             self.spawnY = entityY

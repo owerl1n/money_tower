@@ -11,7 +11,7 @@
 	"iid": "41a35bf0-21a0-11f1-9c63-258aa0ff96ca",
 	"jsonVersion": "1.5.3",
 	"appBuildId": 473703,
-	"nextUid": 95,
+	"nextUid": 97,
 	"identifierStyle": "Capitalize",
 	"toc": [],
 	"worldLayout": "Free",
@@ -803,6 +803,79 @@
 					"tilesetUid": null
 				}
 			]
+		},
+		{
+			"identifier": "NPC",
+			"uid": 95,
+			"tags": [],
+			"exportToToc": false,
+			"allowOutOfBounds": false,
+			"doc": null,
+			"width": 16,
+			"height": 16,
+			"resizableX": false,
+			"resizableY": false,
+			"minWidth": null,
+			"maxWidth": null,
+			"minHeight": null,
+			"maxHeight": null,
+			"keepAspectRatio": false,
+			"tileOpacity": 1,
+			"fillOpacity": 1,
+			"lineOpacity": 1,
+			"hollow": false,
+			"color": "#3E8948",
+			"renderMode": "Rectangle",
+			"showName": true,
+			"tilesetId": null,
+			"tileRenderMode": "FitInside",
+			"tileRect": null,
+			"uiTileRect": null,
+			"nineSliceBorders": [],
+			"maxCount": 0,
+			"limitScope": "PerLevel",
+			"limitBehavior": "MoveLastOne",
+			"pivotX": 0,
+			"pivotY": 0,
+			"fieldDefs": [
+				{
+					"identifier": "Text",
+					"doc": null,
+					"__type": "String",
+					"uid": 96,
+					"type": "F_String",
+					"isArray": false,
+					"canBeNull": true,
+					"arrayMinLength": null,
+					"arrayMaxLength": null,
+					"editorDisplayMode": "Hidden",
+					"editorDisplayScale": 1,
+					"editorDisplayPos": "Above",
+					"editorLinkStyle": "StraightArrow",
+					"editorDisplayColor": null,
+					"editorAlwaysShow": false,
+					"editorShowInWorld": true,
+					"editorCutLongValues": true,
+					"editorTextSuffix": null,
+					"editorTextPrefix": null,
+					"useForSmartColor": false,
+					"exportToToc": false,
+					"searchable": false,
+					"min": null,
+					"max": null,
+					"regex": null,
+					"acceptFileTypes": null,
+					"defaultOverride": null,
+					"textLanguageMode": null,
+					"symmetricalRef": false,
+					"autoChainRef": true,
+					"allowOutOfLevelRef": true,
+					"allowedRefs": "OnlySame",
+					"allowedRefsEntityUid": null,
+					"allowedRefTags": [],
+					"tilesetUid": null
+				}
+			]
 		}
 	], "tilesets": [
 		{
@@ -1070,7 +1143,7 @@
 						},
 						{
 							"__identifier": "Portal",
-							"__grid": [10,2],
+							"__grid": [10,0],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1079,13 +1152,13 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 64,
-							"px": [160,32],
+							"px": [160,0],
 							"fieldInstances": [{ "__identifier": "PairId", "__type": "String", "__value": "1", "__tile": null, "defUid": 80, "realEditorValues": [{
 								"id": "V_String",
 								"params": ["1"]
 							}] }],
 							"__worldX": 160,
-							"__worldY": 32
+							"__worldY": 0
 						},
 						{
 							"__identifier": "Portal",
@@ -1241,7 +1314,7 @@
 						},
 						{
 							"__identifier": "Key",
-							"__grid": [3,1],
+							"__grid": [1,1],
 							"__pivot": [0,0],
 							"__tags": [],
 							"__tile": null,
@@ -1250,9 +1323,9 @@
 							"width": 16,
 							"height": 16,
 							"defUid": 84,
-							"px": [48,16],
+							"px": [16,16],
 							"fieldInstances": [],
-							"__worldX": 48,
+							"__worldX": 16,
 							"__worldY": 16
 						},
 						{
@@ -1310,7 +1383,7 @@
 							"__tags": [],
 							"__tile": null,
 							"__smartColor": "#3A4466",
-							"iid": "023c5300-6fc0-11f1-b2b9-3d960374f515",
+							"iid": "67aa12e0-6fc0-11f1-b8cd-bf999a077a0f",
 							"width": 16,
 							"height": 16,
 							"defUid": 92,
@@ -1639,6 +1712,65 @@
 							],
 							"__worldX": 16,
 							"__worldY": -120
+						},
+						{
+							"__identifier": "NPC",
+							"__grid": [3,5],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#3E8948",
+							"iid": "97aa0550-6fc0-11f1-b8cd-7730617eec94",
+							"width": 16,
+							"height": 16,
+							"defUid": 95,
+							"px": [48,80],
+							"fieldInstances": [{ "__identifier": "Text", "__type": "String", "__value": "Hello there! This is test... As you already know this game is under \"heavy\" development. lol lol lol", "__tile": null, "defUid": 96, "realEditorValues": [{
+								"id": "V_String",
+								"params": [
+									"Hello there! This is test... As you already know this game is under \"heavy\" development. lol lol lol"
+								]
+							}] }],
+							"__worldX": 48,
+							"__worldY": -40
+						},
+						{
+							"__identifier": "Treasure",
+							"__grid": [7,5],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FEE761",
+							"iid": "d3c65b60-6fc0-11f1-b8cd-e52aa702f05d",
+							"width": 16,
+							"height": 16,
+							"defUid": 69,
+							"px": [112,80],
+							"fieldInstances": [{ "__identifier": "Kind", "__type": "String", "__value": "crown", "__tile": null, "defUid": 83, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["crown"]
+							}] }],
+							"__worldX": 112,
+							"__worldY": -40
+						},
+						{
+							"__identifier": "Treasure",
+							"__grid": [6,4],
+							"__pivot": [0,0],
+							"__tags": [],
+							"__tile": null,
+							"__smartColor": "#FEE761",
+							"iid": "d6133190-6fc0-11f1-b8cd-3f3b0a11d131",
+							"width": 16,
+							"height": 16,
+							"defUid": 69,
+							"px": [96,64],
+							"fieldInstances": [{ "__identifier": "Kind", "__type": "String", "__value": "ring", "__tile": null, "defUid": 83, "realEditorValues": [{
+								"id": "V_String",
+								"params": ["ring"]
+							}] }],
+							"__worldX": 96,
+							"__worldY": -56
 						}
 					]
 				},

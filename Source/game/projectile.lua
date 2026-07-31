@@ -39,7 +39,7 @@ function Projectile:init(x, y, direction)
 end
 
 function Projectile:update()
-    if Game.instance and Game.instance.spellbook:isActive() then
+    if isGamePaused() then
         return
     end
 

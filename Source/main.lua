@@ -7,10 +7,13 @@ import "CoreLibs/crank"
 import "libs/AnimatedSprite"
 import "libs/SceneManager"
 import "libs/LDtk"
+import "libs/pdDialogue"
 
 import "game/assets"
 import "game/level"
 import "game/player"
+import "game/promptHint"
+import "game/npc"
 import "game/exit"
 import "game/treasure"
 import "game/treasureManager"
@@ -38,10 +41,16 @@ import "scenes/TitleScene"
 local pd  <const> = playdate
 local gfx <const> = pd.graphics
 
--- Регистрируем сцены
 SceneManager.register("splash", SplashScene)
 SceneManager.register("game",   GameScene)
 SceneManager.register("title", TitleScene)
+
+-- Настройка окна диалога под игровое разрешение 200x120
+pdDialogue.set("width", 190)
+pdDialogue.set("height", 40)
+pdDialogue.set("x", 5)
+pdDialogue.set("y", 74)
+pdDialogue.set("padding", 4)
 
 pd.display.setScale(2)
 SceneManager.go("splash", nil, SceneManager.transitions.cut)
@@ -51,6 +60,7 @@ function pd.update()
     SceneManager.update()
     gfx.sprite.update()
     SceneManager.drawOverlay()
+    pdDialogue.update()
     pd.timer.updateTimers()
     --pd.drawFPS(1,1)
 end

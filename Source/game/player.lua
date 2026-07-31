@@ -2,7 +2,7 @@ local pd <const> = playdate
 local gfx <const> = playdate.graphics
 
 import "game/scorePopup"
-
+import "game/promptHint"
 
 class('Player').extends(AnimatedSprite)
 
@@ -77,7 +77,10 @@ function Player:init(x, y, levelComplete)
 
     self._portalCooldown       = 0
 
-    self.scorePopup             = ScorePopup(self)
+    self._nearbyNPC            = nil
+    self.promptHint            = PromptHint(self) 
+
+    self.scorePopup            = ScorePopup(self, self.promptHint)
 
     -- Spell: projectile
     self.projectileAbility     = false
@@ -125,12 +128,13 @@ function Player:update()
     end
 
     if self.dead then
-        self:_clearBlockIndicator()   -- ← добавить
+        self:_clearBlockIndicator()
+        self:_clearNearbyNPC()
         self:updateDeathBounce()
         return
     end
 
-    if Game.instance and Game.instance.spellbook:isActive() then
+    if isGamePaused() then
         self:updateAnimation()
         return
     end
@@ -141,9 +145,9 @@ function Player:update()
 
     self:updateAnimation()
 
-    if not (Game.instance and Game.instance.spellbook:isActive()) then
+    if not isGamePaused() then
         self:handleAbilityInput()
-        self:_updateBlockIndicator()   -- ← добавить
+        self:_updateBlockIndicator()
     end
 
     self:updateJumpBuffer()
@@ -326,6 +330,7 @@ function Player:handleMovementAndCollisions()
     self.touchingWall = false
     local died = false
     local touchedExit = false
+    local touchedNPC = nil
 
     for i = 1, length do
         local collision = collisions[i]
@@ -368,13 +373,15 @@ function Player:handleMovementAndCollisions()
             collisionObject:collect()
         elseif collisionTag == TAGS.Portal then
             collisionObject:teleport(self)
+        elseif collisionTag == TAGS.NPC then
+            touchedNPC = collisionObject
         elseif collisionTag == TAGS.Exit then
             touchedExit = true
             self._lastExitX = collisionObject.x + 8
             self._lastExitY = collisionObject.y
         elseif collisionTag == TAGS.BounceBlock then
             if collision.normal.y == -1 then
-                local targetY            = self._peakY or (self.y - 40)
+                local targetY            = self._peakY or (self.y - 20) --TODO строка (self.y - x) где x - коэф который можно редактировать
                 self.yVelocity           = BounceBlock.getBounceVelocity(self.gravity, targetY, self.y)
                 self.doubleJumpAvailable = false
                 self.dashAvailable       = true
@@ -392,6 +399,13 @@ function Player:handleMovementAndCollisions()
         if self.coyoteFrames > 0 then
             self.coyoteFrames -= 1
         end
+    end
+
+    if touchedNPC then
+        self._nearbyNPC = touchedNPC
+        self.promptHint:show()
+    else
+        self:_clearNearbyNPC()
     end
 
     if self.xVelocity < 0 then
@@ -590,10 +604,18 @@ function Player:_clearBlockIndicator()
     end
 end
 
+function Player:_clearNearbyNPC()
+    if self._nearbyNPC then
+        self._nearbyNPC = nil
+        self.promptHint:hide()
+    end
+end
+
 function Player:collisionResponse(other)
     local tag = other:getTag()
     if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Exit
-        or tag == TAGS.Projectile or tag == TAGS.AnchorMark or tag == TAGS.Portal then
+        or tag == TAGS.Projectile or tag == TAGS.AnchorMark or tag == TAGS.Portal
+        or tag == TAGS.NPC then
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide

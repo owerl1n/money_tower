@@ -59,7 +59,7 @@ function DebtCollector:init(x, y, entity)
 end
 
 function DebtCollector:update()
-    if Game.instance and Game.instance.spellbook:isActive() then
+    if isGamePaused() then
         return
     end
 
@@ -125,7 +125,7 @@ function DebtCollector:update()
             end
         elseif tag == TAGS.BounceBlock then
             if col.normal.y == -1 then
-                local targetY = self._peakY or (self.y - 40)
+                local targetY = self._peakY or (self.y - 20)    --TODO строка (self.y - x) где x - коэф который можно редактировать
                 self.yVelocity = BounceBlock.getBounceVelocity(GRAVITY, targetY, self.y)
                 self._peakY = targetY
                 self.touchingGround = false

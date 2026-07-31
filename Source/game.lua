@@ -21,14 +21,26 @@ TAGS = {
     CrumblingBlock = 9,
     Portal = 10,
     KeyBlock = 11,
+    NPC = 12,
 }
 
 Z_INDEXES = {
     Hazard = 20,
+    NPC = 25,
     Pickup = 50,
     PlacedBlock = 60,
     Player = 100
 }
+
+function isGamePaused()
+    if Game.instance and Game.instance.spellbook:isActive() then
+        return true
+    end
+    if pdDialogue.DialogueBox.enabled then
+        return true
+    end
+    return false
+end
 
 -- TODO изменить потом коллайдеры якоря под размеры финального варианта
 -- Возвращает true, если в прямоугольнике (x,y,w,h) есть что-то "твёрдое":
@@ -91,6 +103,8 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self._activeSlot   = 1 -- edit default spell
 
+    self._suppressNextInput = false
+
     self.spellbook     = SpellBook(self.levelComplete, function(slot)
         if slot ~= self._activeSlot then
             local prev = SPELLS[self._activeSlot]
@@ -116,6 +130,7 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.hud = {
         draw = function()
+            self.player.promptHint:draw()
             self.player.scorePopup:draw()
             self.levelComplete:draw()
         end
@@ -125,7 +140,7 @@ end
 function Game:update()
     self.spellbook:update()
 
-    if not self.spellbook:isActive() then
+    if not isGamePaused() then
         self.player.scorePopup:update()
         self.levelComplete:update()
     end
@@ -133,7 +148,18 @@ end
 
 function Game:handleInput()
     if self.player.dead then return end
-    -- Когда книга открыта — ▲/▼ переключают слоты, A/B закрывают
+
+    -- Диалог только что закрылся этим же нажатием A —
+    -- пропускаем весь ввод в этом кадре, чтобы не открыть диалог заново
+    if self._suppressNextInput then
+        self._suppressNextInput = false
+        return
+    end
+
+    if pdDialogue.DialogueBox.enabled then
+        return
+    end
+
     if self.spellbook:isActive() then
         if pd.buttonJustPressed(pd.kButtonUp) then
             self.spellbook:onUp()
@@ -147,7 +173,11 @@ function Game:handleInput()
         return
     end
 
-    -- Книга закрыта — B открывает книгу
+    if self.player._nearbyNPC and pd.buttonJustPressed(pd.kButtonA) then
+        self.player._nearbyNPC:startDialogue()
+        return
+    end
+
     if pd.buttonJustPressed(pd.kButtonB) then
         self.spellbook:onButtonB()
     end

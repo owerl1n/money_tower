@@ -55,7 +55,7 @@ function FlyingEnemy:init(x, y, entity)
 end
 
 function FlyingEnemy:update()
-    if Game.instance and Game.instance.spellbook:isActive() then
+    if isGamePaused() then
         return
     end
 

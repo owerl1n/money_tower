@@ -68,7 +68,7 @@ function SmokeEffect:init(x, y, kind)
 end
 
 function SmokeEffect:update()
-    if Game.instance and Game.instance.spellbook:isActive() then
+    if isGamePaused() then
         return
     end
     self:updateAnimation()

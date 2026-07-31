@@ -46,7 +46,7 @@ function CrumblingBlock:onPlayerLanded()
 end
 
 function CrumblingBlock:update()
-    if Game.instance and Game.instance.spellbook:isActive() then return end
+    if isGamePaused() then return end
 
     if self._gone then
         if RESPAWN_DELAY > 0 then
