@@ -13,15 +13,48 @@ end
 
 class('Level').extends()
 
+local TAX_LAYER_NAME = "Tax"
+local TAX_MULTIPLIER = 2
+
 function Level:init(levelName)
     self.levelName = levelName
     self:goToLevel(levelName)
 end
 
+function Level:getTaxMultiplierAt(worldX, worldY)
+    if LDtk.has_tile_at(self.levelName, TAX_LAYER_NAME, worldX, worldY) then
+        return TAX_MULTIPLIER
+    end
+    return 1
+end
 
 function Level:getNeighbour(direction)
     local neighbours = ldtk.get_neighbours(self.levelName, direction)
     return neighbours and neighbours[1]
+end
+
+function Level:_spawnTaxZoneTiles(layer)
+    local imageTable = layer.tileset_image
+    if not imageTable then return end
+
+    local gsize = layer.grid_size
+    local width = layer.tilemap_width
+
+    for index, tileID in ipairs(layer.tiles) do
+        if tileID ~= 0 then
+            local cellIndex = index
+            local cx = cellIndex % width
+            local cy = cellIndex // width
+
+            local worldX = layer.rect.x + cx * gsize
+            local worldY = layer.rect.y + cy * gsize
+
+            local image = imageTable[tileID]
+            if image then
+                TaxZoneTile(worldX, worldY, image, layer.zIndex)
+            end
+        end
+    end
 end
 
 function Level:goToLevel(levelName)
@@ -35,21 +68,24 @@ function Level:goToLevel(levelName)
 
     for layerName, layer in pairs(ldtk.get_layers(levelName)) do
         if layer.tiles then
-            local tilemap = ldtk.create_tilemap(levelName, layerName)
+            if layerName == TAX_LAYER_NAME then
+                self:_spawnTaxZoneTiles(layer)
+            else
+                local tilemap = ldtk.create_tilemap(levelName, layerName)
 
-            local layerSprite = gfx.sprite.new()
-            layerSprite:setTilemap(tilemap)
-            layerSprite:moveTo(0, 0)
-            layerSprite:setCenter(0, 0)
-            layerSprite:setZIndex(layer.zIndex)
-            layerSprite:add()
+                local layerSprite = gfx.sprite.new()
+                layerSprite:setTilemap(tilemap)
+                layerSprite:moveTo(0, 0)
+                layerSprite:setCenter(0, 0)
+                layerSprite:setZIndex(layer.zIndex)
+                layerSprite:add()
 
-            local emptyTiles = ldtk.get_empty_tileIDs(levelName, "Solid", layerName)
-            if emptyTiles then
-                local wallSprites = gfx.sprite.addWallSprites(tilemap, emptyTiles)
-                -- Устанавливаем тип для каждого wall sprite
-                for _, wallSprite in ipairs(wallSprites) do
-                    wallSprite.type = "Solid"
+                local emptyTiles = ldtk.get_empty_tileIDs(levelName, "Solid", layerName)
+                if emptyTiles then
+                    local wallSprites = gfx.sprite.addWallSprites(tilemap, emptyTiles)
+                    for _, wallSprite in ipairs(wallSprites) do
+                        wallSprite.type = "Solid"
+                    end
                 end
             end
         end

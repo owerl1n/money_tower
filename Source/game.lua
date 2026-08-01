@@ -22,6 +22,7 @@ TAGS = {
     Portal = 10,
     KeyBlock = 11,
     NPC = 12,
+    TaxZone = 13,
 }
 
 Z_INDEXES = {

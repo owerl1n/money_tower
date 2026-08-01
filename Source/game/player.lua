@@ -10,6 +10,7 @@ playerImageTable = gfx.imagetable.new("images/mage-table-17-17")
 assert(playerImageTable, "playerImageTable not found")
 
 local SHOOT_COOLDOWN = 20
+local BASE_SPELL_COST = 5
 
 function Player:init(x, y, levelComplete)
     Player.super.init(self, playerImageTable)
@@ -100,6 +101,8 @@ function Player:init(x, y, levelComplete)
     self.bounceBlockAbility    = false
     self._lastBounceProjectile = nil
     self._bounceShootCooldown  = 0
+
+    self.taxMultiplier         = 1
 
     self._blockIndicator       = nil
 
@@ -238,11 +241,14 @@ function Player:handleAbilityInput()
                 print("[Player] клетка занята — блок не поставлен")
             end
         elseif self._shootCooldown <= 0 then
-            local dir            = (self.globalFlip == 1) and -1 or 1
-            local p              = Projectile(self.x + dir * 10, self.y, dir)
-            self._lastProjectile = p
-            self._shootCooldown  = SHOOT_COOLDOWN
-            print("[Player] выстрел dir=" .. dir)
+            local cost = BASE_SPELL_COST * self.taxMultiplier
+            if TreasureManager.trySpend(cost) then
+                local dir            = (self.globalFlip == 1) and -1 or 1
+                local p              = Projectile(self.x + dir * 10, self.y, dir)
+                self._lastProjectile = p
+                self._shootCooldown  = SHOOT_COOLDOWN
+                print("[Player] выстрел dir=" .. dir)
+            end
         end
     end
 
@@ -324,6 +330,10 @@ end
 function Player:handleMovementAndCollisions()
     local wasOnGround = self.touchingGround
     local _, _, collisions, length = self:moveWithCollisions(self.x + self.xVelocity, self.y + self.yVelocity)
+
+    if Game.instance and Game.instance.level then
+        self.taxMultiplier = Game.instance.level:getTaxMultiplierAt(self.x, self.y)
+    end
 
     self.touchingGround = false
     self.touchingCeiling = false

@@ -33,6 +33,7 @@ import "game/keyBlock"
 import "game/blockIndicator"
 import "game/flyingEnemy"
 import "game/debtCollector"
+import "game/taxZoneTile"
 
 import "scenes/SplashScene"
 import "scenes/GameScene"

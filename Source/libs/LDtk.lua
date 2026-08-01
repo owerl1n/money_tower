@@ -524,6 +524,32 @@ function LDtk.get_layers(level_name)
 	return level.layers
 end
 
+-- returns true if the given layer has a (non-empty) tile at this world position.
+-- Useful for logic layers like an IntGrid-based "zone" (tax zone, water, etc.)
+-- that were painted with an auto-tileset, without needing entities.
+function LDtk.has_tile_at( level_name, layer_name, worldX, worldY )
+	local level = _levels[level_name]
+	if not level then return false end
+
+	local layer = level.layers[ layer_name ]
+	if not layer or not layer.tiles then return false end
+
+	local localX = worldX - layer.rect.x
+	local localY = worldY - layer.rect.y
+
+	if localX < 0 or localY < 0 or localX >= layer.rect.width or localY >= layer.rect.height then
+		return false
+	end
+
+	local gsize = layer.grid_size
+	local cx = localX // gsize
+	local cy = localY // gsize
+	local id = cy * layer.tilemap_width + cx
+
+	local tileID = layer.tiles[id]
+	return tileID ~= nil and tileID ~= 0
+end
+
 --
 -- internal functions
 --
