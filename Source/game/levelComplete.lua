@@ -11,7 +11,7 @@ local POS = {
 }
 
 -- задержка перед тем как принимать ввод (чтобы не скипнуть случайно)
-local INPUT_DELAY = 60  -- кадров
+local INPUT_DELAY = 30  -- кадров
 
 function LevelComplete:init(currentLevel, onNext, onRestart)
     self._active       = false

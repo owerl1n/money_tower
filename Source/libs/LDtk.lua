@@ -546,7 +546,7 @@ function LDtk.has_tile_at( level_name, layer_name, worldX, worldY )
 	local cy = localY // gsize
 	local id = cy * layer.tilemap_width + cx
 
-	local tileID = layer.tiles[id]
+	local tileID = layer.tiles[id + 1]
 	return tileID ~= nil and tileID ~= 0
 end
 

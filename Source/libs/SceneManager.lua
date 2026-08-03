@@ -272,13 +272,14 @@ end
 
 -- Вызывать после gfx.sprite.update()
 function SceneManager.drawOverlay()
-    -- Прямое рисование текущей сцены (текст, UI)
     if SceneManager._current and SceneManager._current.draw then
         SceneManager._current:draw()
     end
-    -- Overlay перехода поверх всего
     if SceneManager._overlayDraw then
+        local ox, oy = gfx.getDrawOffset()
+        gfx.setDrawOffset(0, 0)
         SceneManager._overlayDraw()
+        gfx.setDrawOffset(ox, oy)
     end
 end
 

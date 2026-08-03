@@ -5,6 +5,8 @@ local gfx <const> = pd.graphics
 TitleScene = {}
 
 function TitleScene:enter(params)
+    gfx.setDrawOffset(0, 0)
+    
     self._image = gfx.image.new("images/splash")
     self._ready = false
 
@@ -16,6 +18,7 @@ function TitleScene:enter(params)
     blackSprite:moveTo(0, 0)
     blackSprite:setZIndex(1000)
     blackSprite:add()
+    blackSprite:setIgnoresDrawOffset(true)
 
     pd.timer.performAfterDelay(1, function()
         blackSprite:remove()

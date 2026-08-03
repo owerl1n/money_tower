@@ -54,6 +54,7 @@ pdDialogue.set("y", 74)
 pdDialogue.set("padding", 4)
 
 pd.display.setScale(2)
+--gfx.setDrawOffset(0, 0)
 SceneManager.go("splash", nil, SceneManager.transitions.cut)
 
 

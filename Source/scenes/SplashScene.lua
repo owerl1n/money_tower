@@ -4,6 +4,7 @@ local gfx <const> = pd.graphics
 SplashScene = {}
 
 function SplashScene:enter(params)
+    gfx.setDrawOffset(0, 0)
     self._logo = gfx.image.new("images/loading")  -- твой loading.png
     -- self._alpha = 1.0
 

@@ -42,7 +42,7 @@ function Level:_spawnTaxZoneTiles(layer)
 
     for index, tileID in ipairs(layer.tiles) do
         if tileID ~= 0 then
-            local cellIndex = index
+            local cellIndex = index - 1
             local cx = cellIndex % width
             local cy = cellIndex // width
 
@@ -65,6 +65,11 @@ function Level:goToLevel(levelName)
     gfx.sprite.removeAll()
     Portal.resetRegistry()
     KeyBlock.resetRegistry()
+
+    local rect = ldtk.get_rect(levelName) -- {x=, y=, width=, height=}
+    local offsetX = math.floor((196 - rect.width) / 2)
+    local offsetY = math.floor((120 - rect.height) / 2)
+    gfx.setDrawOffset(offsetX - 4, offsetY)
 
     for layerName, layer in pairs(ldtk.get_layers(levelName)) do
         if layer.tiles then
