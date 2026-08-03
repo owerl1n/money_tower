@@ -1,7 +1,7 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
-import "game/assets"
+import "game/core/assets"
 
 class('PlacedBlock').extends(gfx.sprite)
 

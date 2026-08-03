@@ -1,7 +1,7 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
--- game/taxZoneTile.lua
+-- game/entities/effects/taxZoneTile.lua
 -- Один тайл декоративного слоя зоны налога с лёгким парением,
 -- как у Treasure — та же идея, случайная фаза на каждый тайл,
 -- чтобы они колыхались не синхронно.

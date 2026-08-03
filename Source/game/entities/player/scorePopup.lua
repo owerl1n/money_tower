@@ -1,7 +1,7 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
--- game/ScorePopup.lua
+-- game/entities/player/scorePopup.lua
 -- Рисуется напрямую в GameScene:draw(), не спрайт.
 -- Поэтому гарантированно поверх всех тайлов и спрайтов.
 

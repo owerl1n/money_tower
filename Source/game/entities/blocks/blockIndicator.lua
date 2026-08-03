@@ -1,9 +1,9 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
-import "game/assets"
+import "game/core/assets"
 
--- game/blockIndicator.lua
+-- game/entities/blocks/blockIndicator.lua
 -- Показывает крестик (Glyphs[6]) на клетке, где сейчас "висит" снаряд.
 -- Если повторно нажать кнопку размещения, блок появится именно здесь.
 

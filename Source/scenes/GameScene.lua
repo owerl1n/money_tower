@@ -1,9 +1,9 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
-import "game"
-import "game/level"
-import "game/player"
+import "game/core/game"
+import "game/core/level"
+import "game/entities/player/player"
 
 GameScene = {}
 

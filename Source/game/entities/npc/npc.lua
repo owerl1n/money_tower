@@ -4,7 +4,7 @@ local gfx <const> = playdate.graphics
 import "libs/AnimatedSprite"
 import "libs/pdDialogue"
 
--- game/npc.lua
+-- game/entities/npc/npc.lua
 -- Простой NPC с диалогом (pdDialogue).
 -- Пока диалог открыт — время в игре стоит (см. isGamePaused() в game.lua).
 -- Диалог начинается кнопкой A, пока игрок находится в триггере NPC

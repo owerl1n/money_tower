@@ -2,10 +2,10 @@ local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
 import "libs/AnimatedSprite"
-import "game/assets"
-import "game/bounceBlock"
+import "game/core/assets"
+import "game/entities/hazards/bounceBlock"
 
--- game/key.lua
+-- game/entities/pickups/key.lua
 -- Подбираемый ключ с анимацией вращения, гравитацией и отскоком от BounceBlock.
 -- Падает вниз до твёрдой поверхности, при подборе открывает все KeyBlock на уровне.
 

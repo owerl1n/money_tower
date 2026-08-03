@@ -1,6 +1,6 @@
 local gfx <const> = playdate.graphics
 
-import "game/assets"
+import "game/core/assets"
 
 class('AnchorMarker').extends(gfx.sprite)
 

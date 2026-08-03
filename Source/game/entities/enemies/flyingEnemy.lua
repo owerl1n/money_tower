@@ -3,7 +3,7 @@ local gfx <const> = playdate.graphics
 
 import "libs/AnimatedSprite"
 
--- game/flyingEnemy.lua
+-- game/entities/enemies/flyingEnemy.lua
 -- Летающий враг (глаз). Патрулирует влево-вправо на фиксированной высоте.
 -- Разворачивается при столкновении с твёрдым (стены, блоки).
 -- Проходит сквозь порталы (телепортируется), подбирает монеты/сокровища

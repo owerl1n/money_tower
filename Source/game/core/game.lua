@@ -2,8 +2,8 @@ local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
 import "libs/AnimatedSprite"
-import "game/level"
-import "game/player"
+import "game/core/level"
+import "game/entities/player/player"
 
 class('Game').extends()
 

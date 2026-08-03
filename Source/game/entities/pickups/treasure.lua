@@ -2,9 +2,9 @@ local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
 import "libs/AnimatedSprite"
-import "game/treasureManager"
+import "game/core/treasureManager"
 
--- game/treasure.lua
+-- game/entities/pickups/treasure.lua
 -- Заменяет Coin. Все типы сокровищ используют один imagetable
 -- treasure-table-16-16, различаются только диапазоном кадров и ценностью.
 -- Парение вверх-вниз реализовано кодом (синус), а не спрайт-анимацией позиции.

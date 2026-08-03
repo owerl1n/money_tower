@@ -3,8 +3,8 @@ local gfx <const> = playdate.graphics
 local ease <const> = pd.easingFunctions
 
 import "libs/AnimatedSprite"
-import "game/spells"
-import "game/assets"
+import "game/spells/spells"
+import "game/core/assets"
 
 class('SpellBook').extends(AnimatedSprite)
 

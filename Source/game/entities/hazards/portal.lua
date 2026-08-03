@@ -3,7 +3,7 @@ local gfx <const> = playdate.graphics
 
 import "libs/AnimatedSprite"
 
--- game/portal.lua
+-- game/entities/hazards/portal.lua
 -- Портал телепортирует игрока к парному порталу.
 -- Порталы связываются полем entity.fields.PairId (число) в LDtk —
 -- на уровне должно быть ровно 2 портала с одинаковым PairId.

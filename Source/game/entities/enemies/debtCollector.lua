@@ -2,9 +2,9 @@ local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
 import "libs/AnimatedSprite"
-import "game/bounceBlock"
+import "game/entities/hazards/bounceBlock"
 
--- game/debtCollector.lua
+-- game/entities/enemies/debtCollector.lua
 -- Обычный (наземный) враг. Патрулирует влево-вправо, подчиняется гравитации,
 -- отскакивает от BounceBlock так же, как игрок. Проходит сквозь порталы,
 -- "съедает" монеты/сокровища без начисления очков и активирует CrumblingBlock.

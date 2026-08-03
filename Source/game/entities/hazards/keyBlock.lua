@@ -1,8 +1,8 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
-import "game/smokeEffect"
-import "game/assets"
+import "game/entities/effects/smokeEffect"
+import "game/core/assets"
 
 class('KeyBlock').extends(gfx.sprite)
 

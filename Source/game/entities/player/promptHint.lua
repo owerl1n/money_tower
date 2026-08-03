@@ -1,7 +1,7 @@
 local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
--- game/promptHint.lua
+-- game/entities/player/promptHint.lua
 -- Подсказка-иконка кнопки A над головой игрока.
 -- Показывается, пока игрок стоит в триггере NPC.
 -- ScorePopup учитывает её видимость и поднимается выше (см. scorePopup.lua)

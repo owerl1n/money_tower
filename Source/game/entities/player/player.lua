@@ -1,8 +1,8 @@
 local pd <const> = playdate
 local gfx <const> = playdate.graphics
 
-import "game/scorePopup"
-import "game/promptHint"
+import "game/entities/player/scorePopup"
+import "game/entities/player/promptHint"
 
 class('Player').extends(AnimatedSprite)
 

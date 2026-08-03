@@ -3,7 +3,7 @@ local gfx <const> = playdate.graphics
 
 import "libs/AnimatedSprite"
 
--- game/smokeEffect.lua
+-- game/entities/effects/smokeEffect.lua
 -- Одноразовая анимация дыма. Удаляет себя по окончании.
 -- Использование:
 --   SmokeEffect(x, y, "block")   -- кадры 1-12, при размещении блока
