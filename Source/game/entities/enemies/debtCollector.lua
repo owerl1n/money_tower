@@ -4,19 +4,41 @@ local gfx <const> = playdate.graphics
 import "libs/AnimatedSprite"
 import "game/entities/hazards/bounceBlock"
 
--- game/entities/enemies/debtCollector.lua
--- Обычный (наземный) враг. Патрулирует влево-вправо, подчиняется гравитации,
--- отскакивает от BounceBlock так же, как игрок. Проходит сквозь порталы,
--- "съедает" монеты/сокровища без начисления очков и активирует CrumblingBlock.
-
 class('DebtCollector').extends(AnimatedSprite)
 
 local imagetable = gfx.imagetable.new("images/debt_collector-table-16-16")
-assert(imagetable, "DebtCollector: не удалось загрузить images/debt_collector-table-16-16")
+assert(imagetable, "DebtCollector: не удалось загрузить debt_collector-table-16-16")
 
 local DEFAULT_SPEED = 1
 local GRAVITY = 0.85
-local TELEPORT_COOLDOWN = 35 -- кадров игнорировать порталы после телепорта
+local TELEPORT_COOLDOWN = 35
+
+-- Коллайдер: setCollideRect(2, 2, 12, 12) на спрайте 16x16 с center(0.5, 0.5)
+-- => половина ширины хитбокса = 6px, нижняя грань хитбокса = self.y + 6
+local COLLIDER_HALF_W = 6
+local COLLIDER_BOTTOM = 6
+
+local GROUND_PROBE_DEPTH = 3  -- насколько ниже ног проверяем опору
+local LEDGE_PROBE_AHEAD  = 8  -- на сколько пикселей вперёд смотрим при поиске обрыва
+local LEDGE_PROBE_WIDTH  = 4
+
+-- Авторитетная проверка "есть ли твёрдая опора прямо под ногами сейчас".
+-- Не зависит от того, что вернула коллизия в этом кадре — читает мир напрямую.
+local function hasGroundBelow(self)
+    local left = self.x - COLLIDER_HALF_W
+    local w    = COLLIDER_HALF_W * 2
+    local y    = self.y + COLLIDER_BOTTOM
+    return isAreaBlocked(left, y, w, GROUND_PROBE_DEPTH, self)
+end
+
+-- Проверка "есть ли опора немного впереди по направлению движения".
+-- Если нет — там обрыв/пропасть, нужно развернуться, не дожидаясь падения.
+local function hasGroundAhead(self, direction)
+    local aheadX = self.x + direction * LEDGE_PROBE_AHEAD
+    local left   = aheadX - LEDGE_PROBE_WIDTH / 2
+    local y      = self.y + COLLIDER_BOTTOM
+    return isAreaBlocked(left, y, LEDGE_PROBE_WIDTH, GROUND_PROBE_DEPTH, self)
+end
 
 function DebtCollector:init(x, y, entity)
     DebtCollector.super.init(self, imagetable)
@@ -25,7 +47,6 @@ function DebtCollector:init(x, y, entity)
         loop = true,
     })
 
-    -- Направление старта: entity.fields.Direction = "left"/"right"
     self._direction = 1
     if entity and entity.fields and entity.fields.Direction then
         if string.lower(entity.fields.Direction) == "left" then
@@ -33,7 +54,6 @@ function DebtCollector:init(x, y, entity)
         end
     end
 
-    -- Скорость: entity.fields.Speed (Float), у каждого своя
     self._speed = DEFAULT_SPEED
     if entity and entity.fields and entity.fields.Speed then
         self._speed = entity.fields.Speed
@@ -48,7 +68,7 @@ function DebtCollector:init(x, y, entity)
 
     self.yVelocity      = 0
     self.touchingGround = false
-    self._peakY         = nil -- верхняя точка падения, нужна для расчёта отскока
+    self._peakY         = nil
 
     self._portalCooldown = 0
 
@@ -69,8 +89,6 @@ function DebtCollector:update()
 
     self:updateAnimation()
 
-    -- Отслеживаем "верхнюю" точку падения (минимальный y), пока не касаемся земли —
-    -- нужно, чтобы BounceBlock мог вернуть врага примерно на ту же высоту
     if not self.touchingGround then
         if self._peakY == nil or self.y < self._peakY then
             self._peakY = self.y
@@ -80,6 +98,12 @@ function DebtCollector:update()
     self.yVelocity += GRAVITY
     if self.touchingGround then
         self.yVelocity = 0
+    end
+
+    -- ← НОВОЕ: если стоим на земле и впереди по курсу — обрыв, разворачиваемся
+    -- ДО того, как сделаем шаг, чтобы не зависать на краю и не падать зря.
+    if self.touchingGround and not hasGroundAhead(self, self._direction) then
+        self._direction = -self._direction
     end
 
     local newX = self.x + self._direction * self._speed
@@ -111,8 +135,7 @@ function DebtCollector:update()
             end
             return
         elseif tag == TAGS.Pickup then
-            -- Монетки/сокровища просто исчезают, очки за них НЕ начисляются
-            if other.getValue then -- отличаем Treasure от Key по наличию getValue()
+            if other.getValue then
                 other:destroy()
             end
         elseif tag == TAGS.CrumblingBlock then
@@ -125,12 +148,21 @@ function DebtCollector:update()
             end
         elseif tag == TAGS.BounceBlock then
             if col.normal.y == -1 then
-                local targetY = self._peakY or (self.y - 20)    --TODO строка (self.y - x) где x - коэф который можно редактировать
+                local targetY = self._peakY or (self.y - 20)
                 self.yVelocity = BounceBlock.getBounceVelocity(GRAVITY, targetY, self.y)
-                self._peakY = targetY
+                self._peakY    = targetY
                 self.touchingGround = false
             end
         end
+    end
+
+    -- ← НОВОЕ: перепроверяем реальность после движения. Даже если коллизия
+    -- в этом кадре сказала "приземлился" (что может быть неоднозначно из-за
+    -- пограничного пересечения с только что созданным блоком), убеждаемся,
+    -- что под ногами правда что-то есть.
+    if self.touchingGround and not hasGroundBelow(self) then
+        self.touchingGround = false
+        self._peakY = self.y
     end
 end
 
@@ -145,6 +177,5 @@ function DebtCollector:collisionResponse(other)
         return gfx.sprite.kCollisionTypeSlide
     end
 
-    -- Игрок, снаряды, монетки, порталы, якорь и т.п. — просто проходим сквозь
     return gfx.sprite.kCollisionTypeOverlap
 end

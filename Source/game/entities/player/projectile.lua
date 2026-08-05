@@ -77,8 +77,9 @@ end
 
 function Projectile:collisionResponse(other)
     local tag = other:getTag()
-    if tag == TAGS.Player or tag == TAGS.Exit or tag == TAGS.AnchorMark
-        or tag == TAGS.Portal then       -- ← добавить
+    if tag == TAGS.Pickup or tag == TAGS.Hazard or tag == TAGS.Exit
+        or tag == TAGS.Projectile or tag == TAGS.AnchorMark or tag == TAGS.Portal
+        or tag == TAGS.NPC then
         return gfx.sprite.kCollisionTypeOverlap
     end
     return gfx.sprite.kCollisionTypeSlide

@@ -11,7 +11,7 @@ class('SpellBook').extends(AnimatedSprite)
 local BOOK_W       = 107
 local TARGET_X     = 100
 local TARGET_Y     = 50
-local OFFSCREEN_X  = 200 + BOOK_W / 2
+local OFFSCREEN_X  = 204 + BOOK_W / 2
 
 local SLIDE_IN_MS  = 350
 local SLIDE_OUT_MS = 250

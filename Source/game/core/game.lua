@@ -56,7 +56,7 @@ function isAreaBlocked(x, y, w, h, ignoreSprite)
             local tag = sprite.getTag and sprite:getTag()
             if tag == TAGS.Block or tag == TAGS.BounceBlock
                 or tag == TAGS.Hazard or tag == TAGS.CrumblingBlock
-                or tag == TAGS.AnchorMark or tag == TAGS.KeyBlock then
+                or tag == TAGS.AnchorMark or tag == TAGS.KeyBlock  or tag == TAGS.NPC then
                 return true
             end
         end

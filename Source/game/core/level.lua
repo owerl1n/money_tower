@@ -51,7 +51,7 @@ function Level:_spawnTaxZoneTiles(layer)
 
             local image = imageTable[tileID]
             if image then
-                TaxZoneTile(worldX, worldY, image, layer.zIndex)
+                TaxZoneTile(worldX + 4, worldY, image, layer.zIndex)
             end
         end
     end
