@@ -44,6 +44,10 @@ function ScorePopup:draw()
     if self._hint and self._hint:isVisible() then
         extraOffset = self._hint:getHeight() + 4
     end
+    if p.taxIndicator and p.taxMultiplier > 1 then
+        local _, th = gfx.getTextSize("x" .. p.taxMultiplier)
+        extraOffset += th + 4
+    end
 
     local drawX = p.x
     local drawY = p.y - OFFSET_Y - extraOffset

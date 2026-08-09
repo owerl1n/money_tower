@@ -132,6 +132,7 @@ function Game:init(startLevel, onNextLevel, onRestart)
     self.hud = {
         draw = function()
             self.player.promptHint:draw()
+            self.player.taxIndicator:draw()
             self.player.scorePopup:draw()
             self.levelComplete:draw()
         end

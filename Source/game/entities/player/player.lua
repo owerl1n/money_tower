@@ -3,6 +3,7 @@ local gfx <const> = playdate.graphics
 
 import "game/entities/player/scorePopup"
 import "game/entities/player/promptHint"
+import "game/entities/player/taxIndicator"
 
 class('Player').extends(AnimatedSprite)
 
@@ -33,17 +34,17 @@ function Player:init(x, y, levelComplete)
     -- Physics
     self.xVelocity             = 0
     self.yVelocity             = 0
-    self.gravity               = 0.85
+    self.gravity               = 0.75
     self.maxSpeed              = 2
-    self.jumpVelocity          = -4.5
-    self.drag                  = 0.1
+    self.jumpVelocity          = -4.05
+    self.drag                  = 0.2
     self.minimumAirSpeed       = 0.5
 
     -- jump
-    self.jumpBufferAmount      = 5
+    self.jumpBufferAmount      = 7
     self.jumpBuffer            = 0
-    self.jumpHoldForce         = -0.4
-    self.jumpHoldMaxFrames     = 8
+    self.jumpHoldForce         = -0.35
+    self.jumpHoldMaxFrames     = 7
     self.jumpHoldFrames        = 0
     self.jumpMinCutoffSpeed    = -1.4
 
@@ -80,6 +81,8 @@ function Player:init(x, y, levelComplete)
 
     self._nearbyNPC            = nil
     self.promptHint            = PromptHint(self) 
+
+    self.taxIndicator          = TaxIndicator(self, self.promptHint)
 
     self.scorePopup            = ScorePopup(self, self.promptHint)
 
@@ -332,7 +335,9 @@ function Player:handleMovementAndCollisions()
     local _, _, collisions, length = self:moveWithCollisions(self.x + self.xVelocity, self.y + self.yVelocity)
 
     if Game.instance and Game.instance.level then
-        self.taxMultiplier = Game.instance.level:getTaxMultiplierAt(self.x, self.y)
+        local colliderX = self.x - 5.5 -- -8.5 (половина 17) + 3 (offset коллайдера)
+        local colliderY = self.y - 5.5
+        self.taxMultiplier = Game.instance.level:getTaxMultiplierAt(colliderX, colliderY, 10, 13)
     end
 
     self.touchingGround = false

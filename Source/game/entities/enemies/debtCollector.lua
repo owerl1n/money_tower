@@ -10,7 +10,7 @@ local imagetable = gfx.imagetable.new("images/debt_collector-table-16-16")
 assert(imagetable, "DebtCollector: не удалось загрузить debt_collector-table-16-16")
 
 local DEFAULT_SPEED = 1
-local GRAVITY = 0.85
+local GRAVITY = 0.75
 local TELEPORT_COOLDOWN = 35
 
 -- Коллайдер: setCollideRect(2, 2, 12, 12) на спрайте 16x16 с center(0.5, 0.5)
@@ -20,13 +20,15 @@ local COLLIDER_BOTTOM = 6
 
 local GROUND_PROBE_DEPTH = 3  -- насколько ниже ног проверяем опору
 local LEDGE_PROBE_AHEAD  = 8  -- на сколько пикселей вперёд смотрим при поиске обрыва
-local LEDGE_PROBE_WIDTH  = 4
+local LEDGE_PROBE_WIDTH  = 6
+
+local PROBE_EPSILON = 1
 
 -- Авторитетная проверка "есть ли твёрдая опора прямо под ногами сейчас".
 -- Не зависит от того, что вернула коллизия в этом кадре — читает мир напрямую.
 local function hasGroundBelow(self)
-    local left = self.x - COLLIDER_HALF_W
-    local w    = COLLIDER_HALF_W * 2
+    local left = self.x - COLLIDER_HALF_W - PROBE_EPSILON
+    local w    = COLLIDER_HALF_W * 2 + PROBE_EPSILON * 2
     local y    = self.y + COLLIDER_BOTTOM
     return isAreaBlocked(left, y, w, GROUND_PROBE_DEPTH, self)
 end
@@ -35,9 +37,10 @@ end
 -- Если нет — там обрыв/пропасть, нужно развернуться, не дожидаясь падения.
 local function hasGroundAhead(self, direction)
     local aheadX = self.x + direction * LEDGE_PROBE_AHEAD
-    local left   = aheadX - LEDGE_PROBE_WIDTH / 2
+    local left   = aheadX - LEDGE_PROBE_WIDTH / 2 - PROBE_EPSILON
+    local width  = LEDGE_PROBE_WIDTH + PROBE_EPSILON * 2
     local y      = self.y + COLLIDER_BOTTOM
-    return isAreaBlocked(left, y, LEDGE_PROBE_WIDTH, GROUND_PROBE_DEPTH, self)
+    return isAreaBlocked(left, y, width, GROUND_PROBE_DEPTH, self)
 end
 
 function DebtCollector:init(x, y, entity)

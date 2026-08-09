@@ -14,7 +14,7 @@ class('Key').extends(AnimatedSprite)
 local keyTable = gfx.imagetable.new("images/key-table-16-16")
 assert(keyTable, "Assets: не удалось загрузить images/key-table-16-16")
 
-local GRAVITY = 0.85
+local GRAVITY = 0.75
 
 function Key:init(x, y, entity)
     Key.super.init(self, keyTable)

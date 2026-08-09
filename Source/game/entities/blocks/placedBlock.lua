@@ -8,8 +8,8 @@ class('PlacedBlock').extends(gfx.sprite)
 local blockImage = nil
 
 
-blockImage = Tileset[861]
-assert(blockImage, "PlacedBlock: тайл 861 не найден")
+blockImage = Tileset[1346]
+assert(blockImage, "PlacedBlock: тайл 1346 не найден")
 
 
 function PlacedBlock:init(x, y)

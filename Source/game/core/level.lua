@@ -21,8 +21,8 @@ function Level:init(levelName)
     self:goToLevel(levelName)
 end
 
-function Level:getTaxMultiplierAt(worldX, worldY)
-    if LDtk.has_tile_at(self.levelName, TAX_LAYER_NAME, worldX, worldY) then
+function Level:getTaxMultiplierAt(worldX, worldY, w, h)
+    if LDtk.has_tile_in_rect(self.levelName, TAX_LAYER_NAME, worldX - 6, worldY, w or 0, h or 0) then
         return TAX_MULTIPLIER
     end
     return 1
@@ -51,7 +51,7 @@ function Level:_spawnTaxZoneTiles(layer)
 
             local image = imageTable[tileID]
             if image then
-                TaxZoneTile(worldX + 4, worldY, image, layer.zIndex)
+                TaxZoneTile(worldX + 6, worldY, image, layer.zIndex)
             end
         end
     end
