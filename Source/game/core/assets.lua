@@ -9,3 +9,5 @@ assert(Tileset, "Tileset: не удалось загрузить level/tileset-t
 Glyphs = gfx.imagetable.new("images/glyphs-table-16-16")
 assert(Glyphs, "Assets: не удалось загрузить images/glyphs-table-16-16")
 
+ScoreFont = gfx.font.new("fonts/Bongo-8-Mono")
+assert(ScoreFont, "failed to load fonts/MyFont")

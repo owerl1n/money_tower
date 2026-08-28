@@ -10,8 +10,12 @@ class('Player').extends(AnimatedSprite)
 playerImageTable = gfx.imagetable.new("images/mage-table-17-17")
 assert(playerImageTable, "playerImageTable not found")
 
-local SHOOT_COOLDOWN = 20
-local BASE_SPELL_COST = 5
+local SHOOT_COOLDOWN          = 20
+
+local BLOCK_SPELL_COST        = 60 --6
+local DASH_SPELL_COST         = 75 --8
+local ANCHOR_SPELL_COST       = 90 --14
+local BOUNCE_BLOCK_SPELL_COST = 115 --16
 
 function Player:init(x, y, levelComplete)
     Player.super.init(self, playerImageTable)
@@ -244,8 +248,7 @@ function Player:handleAbilityInput()
                 print("[Player] клетка занята — блок не поставлен")
             end
         elseif self._shootCooldown <= 0 then
-            local cost = BASE_SPELL_COST * self.taxMultiplier
-            if TreasureManager.trySpend(cost) then
+            if self:_castSpell(BLOCK_SPELL_COST) then
                 local dir            = (self.globalFlip == 1) and -1 or 1
                 local p              = Projectile(self.x + dir * 10, self.y, dir)
                 self._lastProjectile = p
@@ -279,10 +282,12 @@ function Player:handleAbilityInput()
                 print("[Player] клетка занята — BounceBlock не поставлен")
             end
         elseif self._bounceShootCooldown <= 0 then
-            local dir                  = (self.globalFlip == 1) and -1 or 1
-            local p                    = Projectile(self.x + dir * 10, self.y, dir)
-            self._lastBounceProjectile = p
-            self._bounceShootCooldown  = SHOOT_COOLDOWN
+            if self:_castSpell(BOUNCE_BLOCK_SPELL_COST) then
+                local dir                  = (self.globalFlip == 1) and -1 or 1
+                local p                    = Projectile(self.x + dir * 10, self.y, dir)
+                self._lastBounceProjectile = p
+                self._bounceShootCooldown  = SHOOT_COOLDOWN
+            end
         end
     end
 
@@ -306,15 +311,11 @@ function Player:handleAnchorInput()
 
     if self._anchorX then
         local tx, ty = self._anchorX, self._anchorY
-
-        -- проверяем площадь коллайдера игрока (10x13, с центром чуть смещён)
         local blocked = isAreaBlocked(tx - 5, ty - 6.5, 3, 13, self._anchorMarker)
-
         if blocked then
             print("[Anchor] телепорт заблокирован — место занято")
             return
         end
-
         SmokeEffect(self.x, self.y, "anchor")
         self:clearAnchor()
         self:moveTo(tx, ty)
@@ -322,6 +323,10 @@ function Player:handleAnchorInput()
         SmokeEffect(tx, ty, "anchor")
         print("[Anchor] teleport to " .. tx .. "," .. ty)
     else
+        if not self:_castSpell(ANCHOR_SPELL_COST) then
+            print("[Anchor] недостаточно денег")
+            return
+        end
         self._anchorX = self.x
         self._anchorY = self.y
         self._anchorMarker = AnchorMarker(self.x, self.y)
@@ -477,7 +482,8 @@ end
 function Player:handleGroundInput()
     if self:playerJumped() then
         self:changeToJumpState()
-    elseif pd.buttonJustPressed(pd.kButtonA) and self.dashAvailable and self.dashAbility then
+    elseif pd.buttonJustPressed(pd.kButtonA) and self.dashAvailable and self.dashAbility
+        and self:_castSpell(DASH_SPELL_COST) then
         self:changeToDashState()
     elseif pd.buttonIsPressed(pd.kButtonLeft) then
         self:changeToRunState("left")
@@ -489,13 +495,12 @@ function Player:handleGroundInput()
 end
 
 function Player:handleAirInput()
-    -- Дэш на A в воздухе (только если dashAbility активна и A только что нажата)
-    -- jumpBuffer сбрасывается при прыжке, поэтому A без прыжка = дэш
     if pd.buttonJustPressed(pd.kButtonA) and self.dashAvailable and self.dashAbility then
-        -- jumpHoldFrames > 0 значит мы только что прыгнули и ещё держим A — не дэшим
         if self.jumpHoldFrames <= 0 then
-            self:changeToDashState()
-            return
+            if self:_castSpell(DASH_SPELL_COST) then
+                self:changeToDashState()
+                return
+            end
         end
     end
 
@@ -624,6 +629,17 @@ function Player:_clearNearbyNPC()
         self._nearbyNPC = nil
         self.promptHint:hide()
     end
+end
+
+-- Пытается списать стоимость заклинания (с учётом self.taxMultiplier).
+-- При успехе показывает над головой общий счёт игрока.
+function Player:_castSpell(baseCost)
+    local cost = baseCost * self.taxMultiplier
+    if TreasureManager.trySpend(cost) then
+        self:showScorePopup()
+        return true
+    end
+    return false
 end
 
 function Player:collisionResponse(other)

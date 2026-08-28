@@ -3,6 +3,7 @@ import "CoreLibs/graphics"
 import "CoreLibs/sprites"
 import "CoreLibs/timer"
 import "CoreLibs/crank"
+import "CoreLibs/nineslice"
 
 import "libs/AnimatedSprite"
 import "libs/SceneManager"
@@ -13,6 +14,7 @@ import "game/core/game"
 import "game/core/assets"
 import "game/core/level"
 import "game/core/treasureManager"
+import "game/core/scoreConfig"
 
 import "game/entities/player/player"
 import "game/entities/player/promptHint"
@@ -48,16 +50,24 @@ import "scenes/TitleScene"
 local pd  <const> = playdate
 local gfx <const> = pd.graphics
 
+local myFont = gfx.font.new("fonts/Bongo-8-Mono")
+assert(myFont, "failed to load fonts/MyFont")
+local dialogueFrame = gfx.nineSlice.new("images/nineslice-kenney-2", 6, 6, 4, 4)
+assert(dialogueFrame, "cant find nineslice-kenney-2")
+
 SceneManager.register("splash", SplashScene)
 SceneManager.register("game",   GameScene)
 SceneManager.register("title", TitleScene)
 
--- Настройка окна диалога под игровое разрешение 200x120
+
 pdDialogue.set("width", 190)
-pdDialogue.set("height", 40)
+pdDialogue.set("height", 28)
 pdDialogue.set("x", 5)
-pdDialogue.set("y", 74)
-pdDialogue.set("padding", 4)
+pdDialogue.set("y", 90)
+pdDialogue.set("padding", 6)
+pdDialogue.set("font", ScoreFont)
+pdDialogue.set("drawPrompt", function(self, x, y) end)
+pdDialogue.set("nineSlice", dialogueFrame)
 
 pd.display.setScale(2)
 --gfx.setDrawOffset(0, 0)

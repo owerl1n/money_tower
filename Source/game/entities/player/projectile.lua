@@ -7,7 +7,7 @@ class('Projectile').extends(AnimatedSprite)
 
 local imagetable = nil
 
-local SPEED       = 4
+local SPEED       = 3
 local TILE_SIZE   = 16
 
 

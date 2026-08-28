@@ -18,6 +18,12 @@ function TreasureManager.addScore(amount)
     print("[treasure] собрано: " .. TreasureManager.collected .. " | очки: " .. TreasureManager.score)
 end
 
+function TreasureManager.addBonus(amount)
+    if not amount or amount == 0 then return end
+    TreasureManager.score += amount
+    print("[treasure] бонус: " .. amount .. " | очки: " .. TreasureManager.score)
+end
+
 function TreasureManager.reset()
     TreasureManager.score = 0
     TreasureManager.collected = 0

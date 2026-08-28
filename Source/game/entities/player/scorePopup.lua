@@ -4,6 +4,7 @@ local gfx <const> = playdate.graphics
 -- game/entities/player/scorePopup.lua
 -- Рисуется напрямую в GameScene:draw(), не спрайт.
 -- Поэтому гарантированно поверх всех тайлов и спрайтов.
+import "game/core/assets"
 
 class('ScorePopup').extends()
 
@@ -18,8 +19,10 @@ function ScorePopup:init(player, hint)
 end
 
 function ScorePopup:addScore(amount)
-    self._amount += amount
-    self._timer   = DISPLAY_FRAMES
+    -- Теперь показываем не дельту, а общий счёт игрока (TreasureManager.score) —
+    -- так виджет одинаково подходит и для подбора сокровищ, и для траты на заклинания.
+    self._amount = TreasureManager.score
+    self._timer  = DISPLAY_FRAMES
 end
 
 -- Вызывать каждый кадр из Game:update()
@@ -51,14 +54,13 @@ function ScorePopup:draw()
 
     local drawX = p.x
     local drawY = p.y - OFFSET_Y - extraOffset
-
     local tw, th = gfx.getTextSize(text)
 
     gfx.setImageDrawMode(gfx.kDrawModeFillWhite)
-    gfx.drawTextAligned(
+    ScoreFont:drawTextAligned(
         text,
         math.floor(drawX),
-        math.floor(drawY - th/2),
+        math.floor(drawY - th / 2),
         kTextAlignment.center
     )
     gfx.setImageDrawMode(gfx.kDrawModeCopy)

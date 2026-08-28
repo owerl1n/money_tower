@@ -1,6 +1,6 @@
 {
     "cmake.configureOnOpen": false,
-    "playdate-debug.productName": "money_tower",
+    "playdate-debug.productName": "The Debt Tower",
     "playdate.sdkPath": "${userHome}/Developer/PlaydateSDK",
     "Lua.diagnostics.globals": [
         "playdate",

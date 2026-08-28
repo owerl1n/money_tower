@@ -127,8 +127,8 @@ function Level:goToLevel(levelName)
         elseif entityName == "NPC" then
             NPC(entityX + 8, entityY + 16, entity)
         elseif entityName == "Spawn" then
-            self.spawnX = entityX
-            self.spawnY = entityY
+            self.spawnX = entityX + 8
+            self.spawnY = entityY + 8
         end
         
     end

@@ -19,19 +19,19 @@ assert(treasureImagetable, "Treasure: не удалось загрузить ima
 -- first/last — диапазон кадров этого типа внутри общего imagetable (1-based)
 local TREASURE_TYPES = {
     coin = {
-        value = 10,
+        value = 50, --2
         first = 1, last = 1, tickStep = 4,
     },
     ring = {
-        value = 30,
+        value = 80, --8
         first = 2, last = 2, tickStep = 4,
     },
     diamond = {
-        value = 70,
+        value = 150, --18
         first = 3, last = 3, tickStep = 4,
     },
     crown = {
-        value = 150,
+        value = 200, --28
         first = 4, last = 4, tickStep = 4,
     },
 }

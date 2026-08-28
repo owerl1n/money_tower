@@ -36,7 +36,7 @@ function NPC:init(x, y, entity)
 
     -- Триггер шире и выше самого спрайта — диалог можно начать,
     -- немного не доходя вплотную до NPC
-    self:setCollideRect(0, 0, 14, 16)
+    self:setCollideRect(-6, 0, 10, 12)
     self:setTag(TAGS.NPC)
     self:add()
 

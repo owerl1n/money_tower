@@ -82,6 +82,8 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.currentLevel = startLevel
 
+    TreasureManager.addBonus(ScoreConfig.getStartScore(startLevel))
+
     self.levelComplete = LevelComplete(
         startLevel,
         function()  -- onNext
@@ -151,8 +153,6 @@ end
 function Game:handleInput()
     if self.player.dead then return end
 
-    -- Диалог только что закрылся этим же нажатием A —
-    -- пропускаем весь ввод в этом кадре, чтобы не открыть диалог заново
     if self._suppressNextInput then
         self._suppressNextInput = false
         return

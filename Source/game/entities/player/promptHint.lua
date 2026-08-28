@@ -2,9 +2,7 @@ local pd  <const> = playdate
 local gfx <const> = playdate.graphics
 
 -- game/entities/player/promptHint.lua
--- Подсказка-иконка кнопки A над головой игрока.
--- Показывается, пока игрок стоит в триггере NPC.
--- ScorePopup учитывает её видимость и поднимается выше (см. scorePopup.lua)
+-- "A" button above player's head
 
 class('PromptHint').extends()
 
@@ -30,13 +28,11 @@ function PromptHint:isVisible()
     return self._visible
 end
 
--- Нужно ScorePopup, чтобы понять, насколько подняться выше подсказки
 function PromptHint:getHeight()
     local _, h = buttonImage:getSize()
     return h
 end
 
--- Вызывать из Game.hud.draw(), поверх спрайтов
 function PromptHint:draw()
     if not self._visible then return end
 
