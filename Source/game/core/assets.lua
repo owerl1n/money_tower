@@ -11,3 +11,6 @@ assert(Glyphs, "Assets: не удалось загрузить images/glyphs-tab
 
 ScoreFont = gfx.font.new("fonts/Bongo-8-Mono")
 assert(ScoreFont, "failed to load fonts/MyFont")
+
+MonogramFont = gfx.font.new("fonts/monogram")
+assert(MonogramFont, "failed to load fonts/monogram")

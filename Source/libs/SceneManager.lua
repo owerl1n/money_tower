@@ -261,9 +261,26 @@ function SceneManager._doSwitch()
     end
 end
 
--- ── Публичные методы для pd.update() ─────────────────────────────────────────
 
--- Вызывать в начале pd.update()
+function SceneManager.flashBlack(duration, onDone)
+    local blackImg    = gfx.image.new(W * 2, H * 2, gfx.kColorBlack)
+    local blackSprite = gfx.sprite.new(blackImg)
+    blackSprite:setCenter(0, 0)
+    blackSprite:moveTo(0, 0)
+    blackSprite:setZIndex(1000)
+    blackSprite:setIgnoresDrawOffset(true)
+    blackSprite:add()
+
+    playdate.timer.performAfterDelay(duration or 1, function()
+        blackSprite:remove()
+        if onDone then onDone() end
+    end)
+
+    return blackSprite
+end
+
+
+
 function SceneManager.update()
     if SceneManager._current and SceneManager._current.update then
         SceneManager._current:update()

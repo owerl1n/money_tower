@@ -1,16 +1,29 @@
-local pd  <const> = playdate
-local gfx <const> = playdate.graphics
+local pd   <const> = playdate
+local gfx  <const> = playdate.graphics
+local ease <const> = pd.easingFunctions
 
 import "game/core/assets"
 
 class('LevelComplete').extends()
 
--- Позиции отрисовки очков/вопросов на картинке images/level_finished.
+-- Позиции текста порогов ОТНОСИТЕЛЬНО целевой (конечной) позиции картинки.
 -- Порядок соответствует порядку порогов в self._thresholds.
 local POS = {
     { x = 101, y = 64 },
     { x = 102, y = 80 },
 }
+
+-- ── Параметры анимации выезда снизу вверх ────────────────────────────────────
+local TARGET_Y       = 60   -- конечная Y-позиция картинки (как было изначально)
+local SLIDE_DISTANCE = 140  -- насколько ниже экрана стартует анимация — подстрой под себя
+local SLIDE_DURATION = 400  -- мс — подстрой скорость выезда под себя
+
+-- ── Алмаз слева от числа порога ───────────────────────────────────────────────
+local GEM_OFFSET_X = -16    -- смещение алмаза по X относительно числа — подстрой
+local GEM_OFFSET_Y = 0      -- смещение алмаза по Y относительно числа — подстрой
+
+-- ── Надпись "Floor #x" над картинкой ──────────────────────────────────────────
+local FLOOR_LABEL_OFFSET_Y = -42 -- насколько выше картинки рисуется надпись — подстрой
 
 -- задержка перед тем как принимать ввод (чтобы не скипнуть случайно)
 local INPUT_DELAY = 30  -- кадров
@@ -18,6 +31,8 @@ local INPUT_DELAY = 30  -- кадров
 function LevelComplete:init(currentLevel, onNext, onRestart)
     self._active       = false
     self._image        = gfx.image.new("images/level_finished")
+    self._gemImage     = gfx.image.new("images/gem")
+    assert(self._gemImage, "LevelComplete: не удалось загрузить images/gem")
     self._timer        = 0
     self._inputReady   = false
     self._currentLevel = currentLevel or 1
@@ -26,6 +41,10 @@ function LevelComplete:init(currentLevel, onNext, onRestart)
 
     -- Пороги очков для звёзд этого уровня (см. game/core/scoreConfig.lua)
     self._thresholds = ScoreConfig.getStarThresholds(self._currentLevel)
+
+    -- Текущая Y-позиция картинки/текста во время анимации выезда
+    self._y          = TARGET_Y
+    self._slideTimer = nil
 end
 
 function LevelComplete:trigger()
@@ -33,6 +52,28 @@ function LevelComplete:trigger()
     self._active     = true
     self._timer      = 0
     self._inputReady = false
+
+    if self._slideTimer then
+        self._slideTimer:remove()
+        self._slideTimer = nil
+    end
+
+    -- Стартуем ниже экрана и едем вверх к TARGET_Y через easeOut
+    local startY = TARGET_Y + SLIDE_DISTANCE
+    self._y = startY
+
+    local timer = pd.timer.new(SLIDE_DURATION)
+    self._slideTimer = timer
+
+    timer.updateCallback = function(t)
+        self._y = ease.outCubic(t.currentTime, startY, -SLIDE_DISTANCE, SLIDE_DURATION)
+    end
+
+    timer.timerEndedCallback = function()
+        self._y = TARGET_Y
+        self._slideTimer = nil
+    end
+
     print("[LevelComplete] triggered")
 end
 
@@ -74,23 +115,27 @@ end
 function LevelComplete:draw()
     if not self._active then return end
 
-    self._image:drawCentered(100, 60)
+    local offsetY = self._y - TARGET_Y
+
+    -- ── Надпись "Floor #x" ────────────────────────────────────────────────────
+    local floorText   = "Floor #" .. tostring(self._currentLevel)
+    local ftw, fth    = ScoreFont:getTextWidth(floorText), ScoreFont:getHeight()
 
     gfx.setImageDrawMode(gfx.kDrawModeFillBlack)
+    ScoreFont:drawText(
+        floorText,
+        100 - ftw / 2,
+        self._y + FLOOR_LABEL_OFFSET_Y - fth / 2
+    )
 
-    local collected = TreasureManager.score
-
-    for i = 1, #self._thresholds do
-        local pos       = POS[i] or POS[#POS]
-        local threshold = self._thresholds[i]
-
-        -- Порог достигнут — показываем число порога.
-        -- Не достигнут (в т.ч. если очков вообще 0) — показываем "?".
-        local text = collected >= threshold and tostring(threshold) or "?"
-
-        local tw, th    = ScoreFont:getTextWidth(text), ScoreFont:getHeight()
-        ScoreFont:drawText(text, pos.x - tw / 2, pos.y - th / 2)
-    end
-
+    -- ── Картинка результата ───────────────────────────────────────────────────
     gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    self._image:drawCentered(100, self._y)
+
+    -- ── Пороги очков + алмазы ─────────────────────────────────────────────────
+    local entries = {
+        { threshold = self._thresholds[1], textX = 101, textY = self._y + 4,  gemX = 85, gemY = self._y + 4 },
+        { threshold = self._thresholds[2], textX = 102, textY = self._y + 20, gemX = 86, gemY = self._y + 20 },
+    }
+    LevelStatsPanel.draw(entries, TreasureManager.score, self._gemImage, MonogramFont)
 end

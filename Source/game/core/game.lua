@@ -82,23 +82,26 @@ function Game:init(startLevel, onNextLevel, onRestart)
 
     self.currentLevel = startLevel
 
+    TreasureManager.reset()
     TreasureManager.addBonus(ScoreConfig.getStartScore(startLevel))
 
     self.levelComplete = LevelComplete(
-        startLevel,
-        function()  -- onNext
-            TreasureManager.reset()
-            if onNextLevel then
-                onNextLevel(nextLevel)
-            end
-        end,
-        function()  -- onRestart
-            TreasureManager.reset()
-            if onRestart then
-                onRestart(startLevel)
-            end
+    startLevel,
+    function()  -- onNext
+        SaveManager.setLevelScore(startLevel, TreasureManager.score)
+        TreasureManager.reset()
+        SaveManager.setProgress(nextLevel, totalLevels)
+        if onNextLevel then
+            onNextLevel(nextLevel)
         end
-    )
+    end,
+    function()  -- onRestart
+        TreasureManager.reset()
+        if onRestart then
+            onRestart(startLevel)
+        end
+    end
+)
 
     self.level  = Level(levelName)
 

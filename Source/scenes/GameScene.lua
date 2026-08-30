@@ -17,29 +17,29 @@ function GameScene:enter(params)
 
     gfx.sprite.removeAll()
 
-    local blackImg    = gfx.image.new(200, 120, gfx.kColorBlack)
-    local blackSprite = gfx.sprite.new(blackImg)
-    blackSprite:setCenter(0, 0)
-    blackSprite:moveTo(0, 0)
-    blackSprite:setZIndex(1000)
-    blackSprite:setIgnoresDrawOffset(true)
-    blackSprite:add()
-
-    pd.timer.performAfterDelay(1, function()
+    SceneManager.flashBlack(1, function()
         self.game = Game(
             startLevel,
-            function(next)  goToLevel(next)  end,
-            function(cur)   goToLevel(cur)   end
+            function(next) goToLevel(next) end,
+            function(cur) goToLevel(cur) end
         )
         Game.instance = self.game
-        blackSprite:remove()
     end)
 
-    -- Пункт "Restart" в системном меню (открывается кнопкой Menu).
-    -- Пока меню открыто, игра автоматически на паузе.
+
     self._menuItem = pd.getSystemMenu():addMenuItem("Restart", function()
         self:_restartLevel()
     end)
+
+    -- Пункт "Select Level"
+    self._levelSelectMenuItem = pd.getSystemMenu():addMenuItem("Select Level", function()
+        self:_goToLevelSelect()
+    end)
+end
+
+function GameScene:_goToLevelSelect()
+    if SceneManager.isTransitioning() then return end
+    SceneManager.go("levelSelect", nil, SceneManager.transitions.fade)
 end
 
 function GameScene:_restartLevel()
@@ -58,6 +58,11 @@ function GameScene:exit()
     if self._menuItem then
         pd.getSystemMenu():removeMenuItem(self._menuItem)
         self._menuItem = nil
+    end
+
+    if self._levelSelectMenuItem then
+        pd.getSystemMenu():removeMenuItem(self._levelSelectMenuItem)
+        self._levelSelectMenuItem = nil
     end
 end
 

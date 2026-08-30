@@ -15,6 +15,7 @@ import "game/core/assets"
 import "game/core/level"
 import "game/core/treasureManager"
 import "game/core/scoreConfig"
+import "game/core/saveManager"
 
 import "game/entities/player/player"
 import "game/entities/player/promptHint"
@@ -39,6 +40,7 @@ import "game/entities/blocks/anchorMarker"
 import "game/entities/blocks/blockIndicator"
 
 import "game/ui/levelComplete"
+import "game/ui/levelStatsPanel"
 
 import "game/spells/spellbook"
 
@@ -46,6 +48,7 @@ import "game/spells/spellbook"
 import "scenes/SplashScene"
 import "scenes/GameScene"
 import "scenes/TitleScene"
+import "scenes/LevelSelectScene"
 
 local pd  <const> = playdate
 local gfx <const> = pd.graphics
@@ -58,6 +61,7 @@ assert(dialogueFrame, "cant find nineslice-kenney-2")
 SceneManager.register("splash", SplashScene)
 SceneManager.register("game",   GameScene)
 SceneManager.register("title", TitleScene)
+SceneManager.register("levelSelect", LevelSelectScene)
 
 
 pdDialogue.set("width", 190)
@@ -68,6 +72,8 @@ pdDialogue.set("padding", 6)
 pdDialogue.set("font", ScoreFont)
 pdDialogue.set("drawPrompt", function(self, x, y) end)
 pdDialogue.set("nineSlice", dialogueFrame)
+
+SaveManager.load()
 
 pd.display.setScale(2)
 --gfx.setDrawOffset(0, 0)

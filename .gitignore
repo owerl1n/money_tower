@@ -13,6 +13,6 @@ Thumbs.db
 *.swp
 *.log
 
-# VSCode / Lua Language Server
+
 .vscode/
 Source/level/

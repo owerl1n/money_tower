@@ -1,0 +1,203 @@
+-- Source/scenes/LevelSelectScene.lua
+local pd  <const> = playdate
+local gfx <const> = pd.graphics
+
+LevelSelectScene = {}
+
+local IMAGE_HEIGHT  = 360
+local SCREEN_HEIGHT = 120
+local MAX_SCROLL    = IMAGE_HEIGHT - SCREEN_HEIGHT -- 240
+
+local SCROLL_STEP       = 10  -- пикселей на один уровень — как просил
+local SCROLL_ANIM_SPEED = 2   -- пикселей за кадр при попиксельном подъёме/спуске — подстрой
+
+-- ── PSP-style повтор кнопок ───────────────────────────────────────────────────
+local INITIAL_REPEAT_DELAY = 300 -- мс до начала быстрого повтора
+local REPEAT_INTERVAL      = 60  -- мс между повторами во время быстрой фазы
+
+-- ── Кранк → выбор уровня (по чуть-чуть, не свободный скролл) ─────────────────
+local CRANK_DEGREES_PER_STEP = 20 -- градусов кранка на один уровень — подстрой
+
+-- ── Панель стрелок + статистики уровня (справа от центра экрана) ────────────
+local ARROW_UP_IDLE      = 1
+local ARROW_UP_PRESSED   = 2
+local ARROW_DOWN_IDLE    = 3
+local ARROW_DOWN_PRESSED = 4
+
+local PANEL_X   = 145 -- X-центр блока (стрелки + статистика) — подстрой
+local PANEL_GAP = 4   -- зазор между стрелками и картинкой статистики — подстрой
+
+-- ── Надпись текущего уровня ───────────────────────────────────────────────────
+local LEVEL_LABEL_X = 160 -- X-центр надписи "#N" — подстрой
+local LEVEL_LABEL_Y = 42   -- Y надписи "#N" — подстрой
+
+function LevelSelectScene:enter(params)
+    gfx.setDrawOffset(0, 0)
+    gfx.sprite.removeAll()
+
+    self._image        = nil
+    self._arrowTable   = nil
+    self._statsImage   = nil
+    self._gemImage     = nil
+    self._monogramFont = nil
+
+    local world = json.decodeFile("level/world.ldtk")
+    self._totalLevels = (world and #world.levels) or 1
+
+    local saved = SaveManager.getCurrentLevel()
+    self._selectedLevel = math.max(1, math.min(self._totalLevels, saved))
+
+    self._scrollY       = self:_scrollForLevel(self._selectedLevel)
+    self._targetScrollY = self._scrollY
+
+    self._upState    = { heldSince = nil, nextRepeat = nil }
+    self._downState  = { heldSince = nil, nextRepeat = nil }
+    self._crankAccum = 0
+
+    SceneManager.flashBlack(1, function()
+        self._image = gfx.image.new("images/level_select")
+        assert(self._image, "LevelSelectScene: не удалось загрузить images/level_select")
+
+        self._arrowTable = gfx.imagetable.new("images/arrow-table-21-9")
+        assert(self._arrowTable, "LevelSelectScene: не удалось загрузить images/arrow-table-21-9")
+
+        self._statsImage = gfx.image.new("images/level_finished2")
+        assert(self._statsImage, "LevelSelectScene: не удалось загрузить images/level_finished2")
+
+        self._gemImage = gfx.image.new("images/gem")
+        assert(self._gemImage, "LevelSelectScene: не удалось загрузить images/gem")
+
+        self._monogramFont = gfx.font.new("fonts/monogram")
+        assert(self._monogramFont, "LevelSelectScene: не удалось загрузить fonts/monogram")
+    end)
+end
+
+function LevelSelectScene:exit()
+end
+
+function LevelSelectScene:_scrollForLevel(level)
+    local scroll = MAX_SCROLL - (level - 1) * SCROLL_STEP
+    return math.max(0, math.min(MAX_SCROLL, scroll))
+end
+
+function LevelSelectScene:_changeSelection(delta)
+    local newLevel = math.max(1, math.min(self._totalLevels, self._selectedLevel + delta))
+    if newLevel == self._selectedLevel then return end
+
+    self._selectedLevel = newLevel
+    self._targetScrollY = self:_scrollForLevel(newLevel)
+end
+
+-- Обрабатывает одну кнопку с PSP-style повтором: сразу шаг на 1,
+-- затем пауза, затем быстрый повтор пока кнопка удерживается.
+function LevelSelectScene:_handleRepeatButton(button, sign, state, now)
+    if pd.buttonJustPressed(button) then
+        self:_changeSelection(sign)
+        state.heldSince  = now
+        state.nextRepeat = now + INITIAL_REPEAT_DELAY
+    elseif pd.buttonIsPressed(button) then
+        if state.heldSince and now >= state.nextRepeat then
+            self:_changeSelection(sign)
+            state.nextRepeat = now + REPEAT_INTERVAL
+        end
+    elseif pd.buttonJustReleased(button) then
+        state.heldSince  = nil
+        state.nextRepeat = nil
+    end
+end
+
+function LevelSelectScene:update()
+    if SceneManager.isTransitioning() then return end
+
+    local now = pd.getCurrentTimeMilliseconds()
+    self:_handleRepeatButton(pd.kButtonUp,   1, self._upState,   now)
+    self:_handleRepeatButton(pd.kButtonDown, -1, self._downState, now)
+
+    -- Попиксельный подъём/спуск картинки к целевой позиции
+    if self._scrollY ~= self._targetScrollY then
+        if self._scrollY < self._targetScrollY then
+            self._scrollY = math.min(self._targetScrollY, self._scrollY + SCROLL_ANIM_SPEED)
+        else
+            self._scrollY = math.max(self._targetScrollY, self._scrollY - SCROLL_ANIM_SPEED)
+        end
+    end
+
+    if pd.buttonJustPressed(pd.kButtonA) then
+        SceneManager.go("game", { level = self._selectedLevel }, SceneManager.transitions.fade)
+    elseif pd.buttonJustPressed(pd.kButtonB) then
+        SceneManager.go("title", nil, SceneManager.transitions.fade)
+    end
+end
+
+function LevelSelectScene:cranked(change, acceleratedChange)
+    self._crankAccum += change
+
+    while self._crankAccum >= CRANK_DEGREES_PER_STEP do
+        self._crankAccum -= CRANK_DEGREES_PER_STEP
+        self:_changeSelection(1)
+    end
+    while self._crankAccum <= -CRANK_DEGREES_PER_STEP do
+        self._crankAccum += CRANK_DEGREES_PER_STEP
+        self:_changeSelection(-1)
+    end
+end
+
+function LevelSelectScene:draw()
+    if self._image then
+        self._image:draw(0, -self._scrollY)
+    end
+
+    self:_drawSidePanel()
+    self:_drawLevelLabel()
+end
+
+function LevelSelectScene:_drawLevelLabel()
+    if not self._monogramFont then return end
+
+    local text = "#" .. tostring(self._selectedLevel)
+    local tw   = self._monogramFont:getTextWidth(text)
+
+    gfx.setImageDrawMode(gfx.kDrawModeFillBlack)
+    self._monogramFont:drawText(text, LEVEL_LABEL_X - tw / 2, LEVEL_LABEL_Y)
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
+end
+
+function LevelSelectScene:_drawSidePanel()
+    if not self._arrowTable or not self._statsImage then return end
+
+    local upFrame   = pd.buttonIsPressed(pd.kButtonUp)   and ARROW_UP_PRESSED   or ARROW_UP_IDLE
+    local downFrame = pd.buttonIsPressed(pd.kButtonDown) and ARROW_DOWN_PRESSED or ARROW_DOWN_IDLE
+
+    local upImg   = self._arrowTable[upFrame]
+    local downImg = self._arrowTable[downFrame]
+
+    local _, upH    = upImg:getSize()
+    local _, downH  = downImg:getSize()
+    local _, statsH = self._statsImage:getSize()
+
+    local totalHeight = upH + PANEL_GAP + statsH + PANEL_GAP + downH
+    local topY        = 60 - totalHeight / 2
+
+    local upY    = topY
+    local statsY = upY + upH + PANEL_GAP
+    local downY  = statsY + statsH + PANEL_GAP
+
+    gfx.setImageDrawMode(gfx.kDrawModeCopy)
+    upImg:drawCentered(PANEL_X, upY + upH / 2)
+    self._statsImage:drawCentered(PANEL_X, statsY + statsH / 2)
+    downImg:drawCentered(PANEL_X, downY + downH / 2)
+
+    -- ── Пороги очков + алмазы для выбранного уровня ─────────────────────────
+    if self._gemImage and self._monogramFont then
+        local thresholds = ScoreConfig.getStarThresholds(self._selectedLevel)
+        local savedScore = SaveManager.getLevelScore(self._selectedLevel)
+
+        local entries = {
+            { threshold = thresholds[1], textX = 122, textY = 62, gemX = 163, gemY = 62 },
+            { threshold = thresholds[2], textX = 122, textY = 75, gemX = 163, gemY = 75 },
+        }
+        LevelStatsPanel.draw(entries, savedScore, self._gemImage, MonogramFont)
+    end
+end
+
+return LevelSelectScene
