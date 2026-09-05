@@ -93,6 +93,47 @@ function LevelComplete:getStarsEarned()
     return stars
 end
 
+-- Мгновенно показывает экран финиша: без заезда снизу и без задержки
+-- перед вводом. Используется при скипе игроком.
+function LevelComplete:triggerInstant()
+    if self._active then
+        self:skipIntro()
+        return
+    end
+
+    self._active     = true
+    self._timer      = INPUT_DELAY
+    self._inputReady = true
+
+    if self._slideTimer then
+        self._slideTimer:remove()
+        self._slideTimer = nil
+    end
+
+    self._y = TARGET_Y
+
+    print("[LevelComplete] triggered instantly (skip)")
+end
+
+-- Если экран уже активен, но ещё выезжает / ждёт задержки —
+-- мгновенно доводит его до готового к вводу состояния.
+function LevelComplete:skipIntro()
+    if not self._active then return end
+
+    if self._slideTimer then
+        self._slideTimer:remove()
+        self._slideTimer = nil
+    end
+
+    self._y          = TARGET_Y
+    self._timer       = INPUT_DELAY
+    self._inputReady  = true
+end
+
+function LevelComplete:isInputReady()
+    return self._inputReady
+end
+
 function LevelComplete:update()
     if not self._active then return end
     self._timer += 1

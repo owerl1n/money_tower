@@ -165,6 +165,11 @@ function Game:handleInput()
         return
     end
 
+    if self.player.atExit and pd.buttonJustPressed(pd.kButtonA) then
+        self.player:skipExitSequence()
+        return
+    end
+
     if self.spellbook:isActive() then
         if pd.buttonJustPressed(pd.kButtonUp) then
             self.spellbook:onUp()

@@ -550,6 +550,7 @@ function LDtk.has_tile_at( level_name, layer_name, worldX, worldY )
 	return tileID ~= nil and tileID ~= 0
 end
 
+--custom function
 function LDtk.has_tile_in_rect( level_name, layer_name, worldX, worldY, w, h )
     local points = {
         {worldX,         worldY},
@@ -561,7 +562,7 @@ function LDtk.has_tile_in_rect( level_name, layer_name, worldX, worldY, w, h )
 
     for _, p in ipairs(points) do
         if LDtk.has_tile_at(level_name, layer_name, p[1], p[2]) then
-            return true -- ⚠️ "любая точка внутри" = зона активна, срабатывает раньше
+            return true
         end
     end
     return false

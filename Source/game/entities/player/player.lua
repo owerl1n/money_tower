@@ -80,6 +80,7 @@ function Player:init(x, y, levelComplete)
     self.dead                  = false
 
     self.atExit                = false
+    self._exitSprite           = nil
 
     self._portalCooldown       = 0
 
@@ -399,6 +400,7 @@ function Player:handleMovementAndCollisions()
             touchedExit = true
             self._lastExitX = collisionObject.x + 8
             self._lastExitY = collisionObject.y
+            self._exitSprite = collisionObject
         elseif collisionTag == TAGS.BounceBlock then
             if collision.normal.y == -1 then
                 local targetY            = self._peakY or (self.y - 20) --TODO строка (self.y - x) где x - коэф который можно редактировать
@@ -444,9 +446,17 @@ end
 function Player:onExitTouch()
     self.atExit = true
     self.xVelocity = 0
-    if self.levelComplete then
-        local px = self._lastExitX or self.x
-        local py = self._lastExitY or self.y
+
+    if self._exitSprite then
+        self._exitSprite:playFinishAnimation(function(wasSkipped)
+            if not self.levelComplete then return end
+            if wasSkipped then
+                self.levelComplete:triggerInstant()
+            else
+                self.levelComplete:trigger()
+            end
+        end)
+    elseif self.levelComplete then
         self.levelComplete:trigger()
     end
 end
@@ -640,6 +650,19 @@ function Player:_castSpell(baseCost)
         return true
     end
     return false
+end
+
+function Player:skipExitSequence()
+    if not self.atExit then return end
+
+    if self._exitSprite and not self._exitSprite:isFinished() then
+        self._exitSprite:skipFinishAnimation()
+        return
+    end
+
+    if self.levelComplete and self.levelComplete:isActive() and not self.levelComplete:isInputReady() then
+        self.levelComplete:skipIntro()
+    end
 end
 
 function Player:collisionResponse(other)
